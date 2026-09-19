@@ -43,6 +43,10 @@
 
 ## 손그림 스토리 업데이트
 
-사용자가 직접 그린 10개 그림을 모바일용 [스토리 스프라이트 이미지](./assets/story-sprite.png)로 모아 적용했습니다. 뉴스에 신문 그림과 시민 표정 3종을 보여주고, 집중호우 선택 결과에 따라 보급 또는 복구 장면이 표시됩니다. 첫 화면과 국정 화면에는 대통령 캐릭터가, 선거 성공·실패 화면에는 별도의 축하/실패 그림이, 비밀 이벤트에는 누르면 열리는 편지 그림이 등장합니다. 그림은 모바일 로딩을 위해 축소한 버전이며 원본 파일은 이 대화에서 제공한 그림들입니다.
+사용자가 직접 그린 10개 그림을 **각각 독립된 원본 크기의 PNG 이미지**로 적용했습니다. 그림을 한 장으로 합치거나 자르지 않고, 흰 배경과 원본 구도를 유지합니다. 뉴스에 신문 그림과 시민 표정 3종을 보여주고, 집중호우 선택 결과에 따라 보급 또는 복구 장면이 표시됩니다. 첫 화면과 국정 화면에는 대통령 캐릭터가, 선거 성공·실패 화면에는 별도의 축하/실패 그림이, 비밀 이벤트에는 누르면 열리는 편지 그림이 등장합니다. 시민 그림은 큼직하게 표시하고, 뉴스 결과·국정 화면·비밀 편지·선거 결과에 서로 다른 원본 그림이 나타납니다.
 
 이번 업데이트 전 버전은 [`backup-before-story-update`](https://github.com/jiminhong97/president-simulator/tree/backup-before-story-update) 브랜치에 보관되어 있습니다. 기존 브라우저의 게임 저장 기록(localStorage)은 유지됩니다.
+
+## 손그림 원본 및 동적 연출 업데이트
+
+`assets/` 폴더에서 `president-desk.png`, `news-paper.png`, `citizen-happy.png`, `citizen-worried.png`, `citizen-angry.png`, `result-supply.png`, `result-repair.png`, `secret-letter.png`, `election-win.png`, `election-lose.png` 등 10장의 독립 PNG 이미지를 사용합니다. 기존 2×5 스프라이트는 게임 화면에 사용하지 않습니다. 뉴스의 「시민들의 한마디」에서 인물 표정을 크게 보여주고, 선택 결과에 결정 완료 도장, 사건 등장 효과, 지표 막대 애니메이션, 대통령 일지 스탬프를 추가했습니다. 동작 최소화 설정을 사용하는 경우 화면 애니메이션을 생략합니다. 개편 전 디자인은 [`backup-before-original-art-gameplay`](https://github.com/jiminhong97/president-simulator/tree/backup-before-original-art-gameplay) 브랜치에 보관되어 있습니다.

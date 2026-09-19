@@ -107,30 +107,60 @@ h1,h2,h3{ text-wrap:balance; }
 .citizen-voice{background:#fff;border:1px solid #d6e4d4;border-radius:12px;padding:10px 12px;margin:9px 0 0;color:#2e4a42;font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
 .citizen-voice:nth-of-type(even){background:#fff8ed;border-color:#efdcc6}
 
-/* Original hand-drawn story art: 10 drawings in one 2×5 sprite. */
+/* 원본 손그림: 독립 PNG 파일, 자르거나 확대 배경으로 쓰지 않음 */
 .story-art{
- display:block;
- width:100%;
- aspect-ratio:120/112;
- background-image:url("assets/story-sprite.png");
- background-size:200% 500%;
- background-repeat:no-repeat;
- background-color:white;
- border:1.5px solid #263b42;
- border-radius:13px;
+ display:block; width:100%; max-width:100%; height:auto; aspect-ratio:493/459;
+ object-fit:contain; object-position:center; background:#fff;
+ border:1.5px solid #263b42; border-radius:14px;
  box-shadow:3px 3px 0 #eadcc6;
- flex-shrink:0;
 }
-.hero-art{max-width:265px;margin:16px auto;transform:rotate(-2deg)}
-.desk-art{width:94px;max-width:32%;box-shadow:2px 2px 0 #d5e9c4}
-.event-card .letter-art{max-width:280px;margin:16px auto;transform:rotate(-1deg)}
-.paper-art{width:84px;border:0;box-shadow:none;border-radius:0}
-.scene-art{max-width:310px;margin:12px auto 18px;transform:rotate(-1deg)}
-.ending-art{max-width:320px;margin:14px auto 22px;transform:rotate(-1deg)}
-.citizen-row{display:flex;align-items:center;gap:10px;margin-top:12px}
-.citizen-art{width:63px;min-width:63px;height:59px;border-radius:12px;box-shadow:2px 2px 0 #d5deca}
-.citizen-voice{flex:1;min-width:0;margin:0;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
+.hero-art{width:min(100%,330px);margin:16px auto;transform:rotate(-1deg)}
+.hero{overflow:visible}
+.intro-flag{max-width:310px;margin:12px auto 22px}
+.intro-flag img{height:auto;object-fit:contain;aspect-ratio:787/459}
+.desk-art{width:118px;max-width:38%;height:auto;box-shadow:2px 2px 0 #d5e9c4}
+.flag-head>div:first-child{min-width:0}
+.event-card .letter-art{width:min(100%,345px);margin:14px auto;transform:rotate(-1deg)}
+.paper-art{width:124px;max-width:39%;border:0;box-shadow:none;border-radius:0}
+.scene-art{width:min(100%,415px);margin:14px auto 18px;transform:rotate(-1deg)}
+.ending-art{width:min(100%,380px);margin:14px auto 22px;transform:rotate(-1deg)}
+.citizen-row{display:flex;align-items:center;gap:12px;margin-top:14px;min-width:0}
+.citizen-art{width:108px;min-width:108px;height:auto;max-width:36%;border-radius:12px;box-shadow:2px 2px 0 #d5deca}
+.citizen-voice{flex:1;min-width:0;margin:0;padding:14px;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
 .event-card .choice{word-break:keep-all;overflow-wrap:break-word}
-.letter{animation:letter-reveal .28s ease-out}
-@keyframes letter-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@media(prefers-reduced-motion:reduce){.letter{animation:none}}
+.letter-tap{width:min(100%,345px);margin:16px auto;background:white;box-shadow:none;
+ border:1.5px dashed #d7a2a0;padding:8px 8px 12px;display:block;color:#9d4652;border-radius:16px}
+.letter-tap .story-art{margin:0 auto;max-width:100%;border:0;box-shadow:none;transform:none}
+.letter-tap span{display:block;text-align:center;padding-top:6px}
+.letter-tap:active{transform:scale(.98)}
+/* 게임 연출: 조용하고 짧은 애니메이션 */
+.card.event-card{animation:game-pop .32s ease-out both}
+.news{animation:game-pop .28s ease-out .05s both}
+.scene-art{animation:game-pop .4s ease-out .12s both}
+.citizen-row{animation:game-pop .3s ease-out both}
+.citizen-row:nth-child(3){animation-delay:.12s}
+.stat .meter i{transform-origin:left center;animation:meter-fill .6s ease-out both}
+.decision-stamp{display:table;margin:14px 0 16px auto;padding:8px 14px;background:#fff5e8;
+ border:3px double #b64b35;color:#b64b35;font-weight:900;font-size:15px;letter-spacing:.04em;
+ transform:rotate(-8deg);animation:stamp-in .42s cubic-bezier(.2,1.7,.4,1) both}
+.achievement-card{background:#fbf7e9}
+.achievement-list{display:flex;gap:8px;flex-wrap:wrap}
+.achievement-stamp{display:inline-flex;align-items:center;min-height:36px;line-height:1.4;
+ padding:7px 10px;border:1.5px solid #be9860;border-radius:9px;background:#fff6de;
+ color:#6c5030;font-size:12px;font-weight:800}
+.effects span{animation:game-pop .25s ease-out both}
+@keyframes game-pop{from{opacity:.45;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes meter-fill{from{transform:scaleX(.35)}to{transform:scaleX(1)}}
+@keyframes stamp-in{from{opacity:0;transform:rotate(-17deg) scale(1.5)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+@media(max-width:370px){
+ .citizen-row{gap:8px}
+ .citizen-art{width:85px;min-width:85px}
+ .citizen-voice{padding:10px;font-size:12px}
+ .paper-art{width:95px}
+ .desk-art{width:96px}
+}
+@media(prefers-reduced-motion:reduce){
+ .card.event-card,.news,.scene-art,.citizen-row,.stat .meter i,.decision-stamp,.effects span{
+  animation:none
+ }
+}

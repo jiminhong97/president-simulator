@@ -120,20 +120,37 @@ let game=null;
 const app=document.getElementById("app");
 
 const ART={
- newspaper:[0,0,"직접 그린 바가늠일보 신문"],
- happy:[100,0,"야호 하는 시민 그림"],
- worried:[0,25,"걱정하는 시민 그림"],
- angry:[100,25,"화난 시민 그림"],
- supply:[0,50,"보급 물품을 받은 주민 그림"],
- repair:[100,50,"복구 작업 그림"],
- letter:[0,75,"직접 그린 비밀 편지"],
- desk:[100,75,"대통령 책상에 앉은 캐릭터 그림"],
- win:[0,100,"재선 성공 그림"],
- lose:[100,100,"재선 실패 그림"]
+ newspaper:["news-paper.png","직접 그린 바가늠일보 신문"],
+ happy:["citizen-happy.png","기뻐하는 시민 그림"],
+ worried:["citizen-worried.png","걱정하는 시민 그림"],
+ angry:["citizen-angry.png","화난 시민 그림"],
+ supply:["result-supply.png","보급 물품을 받은 주민 그림"],
+ repair:["result-repair.png","도로 복구 작업 그림"],
+ letter:["secret-letter.png","직접 그린 비밀 편지"],
+ desk:["president-desk.png","대통령 책상에 앉은 캐릭터 그림"],
+ win:["election-win.png","재선 성공 그림"],
+ lose:["election-lose.png","재선 실패 그림"]
 };
 function art(kind,extra=""){
  const a=ART[kind]||ART.newspaper;
- return '<div class="story-art art-'+kind+' '+extra+'" role="img" aria-label="'+a[2]+'" style="background-position:'+a[0]+'% '+a[1]+'%"></div>';
+ return '<img class="story-art art-'+kind+' '+extra+'" src="assets/'+a[0]+'" alt="'+a[1]+'" loading="lazy" decoding="async">';
+}
+function achievements(){
+ if(!game)return [];
+ const history=game.history||[];
+ const badges=[];
+ if(history.some(h=>h.category!=="선거"))badges.push(["📜","첫 국정 결정"]);
+ if(history.some(h=>h.category==="외교"))badges.push(["🌐","외교 회담 참여"]);
+ if(history.some(h=>h.category==="후속 사건"))badges.push(["🧰","후속 사건 해결"]);
+ if(history.some(h=>h.category==="비밀 이벤트"))badges.push(["💌","비밀 편지 수령"]);
+ if(game.elected)badges.push(["🏅","재선 성공"]);
+ if(game.term===2&&game.phase==="end")badges.push(["🎓","두 번의 임기 완료"]);
+ return badges;
+}
+function badgesHTML(){
+ const earned=achievements();
+ return '<section class="card achievement-card"><span class="tag">COLLECTION</span><h3>🎖️ 대통령 일지 스탬프</h3><p>국정을 진행하면서 모은 기록입니다.</p>'+
+ (earned.length?'<div class="achievement-list">'+earned.map(b=>'<span class="achievement-stamp">'+b[0]+' '+b[1]+'</span>').join("")+'</div>':'<p class="muted">아직 획득한 스탬프가 없습니다.</p>')+'</section>';
 }
 function citizenArt(eventId,index,voice){
  if(eventId==="disaster")return index===0?(voice===0?"happy":"worried"):(voice===0?"happy":"worried");
@@ -327,7 +344,7 @@ function intro(){
  '<p class="stage-kicker">★ 오늘부터, 내가 대통령</p><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
  '<p>당신의 결정으로 움직이는 작은 공화국. 내각을 꾸리고, 국가 위기에 대응하고, 재선에 도전하세요.</p>'+
  art("desk","hero-art")+
- '<div class="flag-stage"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
+ '<div class="flag-stage intro-flag"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
  (saved?'<div class="notice">💾 저장된 게임: '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume")+'<div class="rule"></div>':"")+
  '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="이름을 입력하세요" autocomplete="off">'+
  btn("🏛️ 취임 선서하고 시작하기 →","start")+'</section>'+
@@ -357,7 +374,7 @@ function play(){
  statsHTML()+
  '<section class="card event-card '+(secret?"secret":"")+'"><div class="event-head"><span class="tag">'+(closed?"대통령 전용 서신":e.cat+' · NATIONAL ISSUE')+'</span>'+
  '<img class="flag-small" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"></div>'+
- (secret?art("letter","letter-art"):"")+
+ (secret?(closed?'<button type="button" class="letter-tap" data-action="openLetter" aria-label="편지 그림을 눌러 편지 열기">'+art("letter","letter-art")+'<span>봉투를 눌러 열어보세요 ↗</span></button>':art("letter","letter-art")):"")+
  '<h2>'+(closed?"💌 대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2>'+
  (closed?'<p>대통령님만 열어볼 수 있는 특별한 봉투입니다.</p>'+btn("💌 편지 열어보기","openLetter"):
  '<p>'+e.desc+'</p>'+
@@ -366,7 +383,7 @@ function play(){
  e.options.map((o,i)=>btn('<strong>0'+(i+1)+' · '+o[0]+'</strong><small>선택 시 바뀌는 게임 지표</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join(""))+
  '</section>'+(closed?"":advice(e))+
  '<section class="card"><span class="tag">MY CABINET</span><h3>👔 임명된 내각</h3>'+ROLES.map(r=>'<p><b>'+r.title+'</b> · '+person(r.id).name+' ('+person(r.id).style+')</p>').join("")+'</section>'+
- '<section class="card"><h3>📜 국정 기록</h3>'+btn("지난 정책과 뉴스 확인","history","","secondary")+'</section>';
+ badgesHTML()+'<section class="card"><h3>📜 국정 기록</h3>'+btn("지난 정책과 뉴스 확인","history","","secondary")+'</section';
 }
 function news(){
  let n=game.latest;
@@ -377,10 +394,10 @@ function news(){
  statsHTML()+
  '<section class="card"><div class="news-masthead"><div><strong>바가늠일보</strong><p class="small muted">BAGANEUM DAILY · 가상 뉴스</p></div>'+
  art("newspaper","paper-art")+'</div>'+
- '<div class="ticker">● BREAKING NEWS · 속보</div><div class="news"><span class="tag">'+safe(n.category)+'</span>'+
+ '<div class="ticker">● BREAKING NEWS · 속보</div><div class="decision-stamp" aria-label="결정 완료">국정 결정 완료 ✓</div><div class="news"><span class="tag">'+safe(n.category)+'</span>'+
  (n.scene&&n.scene!=="newspaper"?art(n.scene,"scene-art"):"")+
  '<h3>'+safe(n.title)+'… 정부, '+safe(n.choice)+' 발표</h3><p>'+safe(n.story)+'</p></div>'+
- '<div class="report-pull"><b>👥 가상 시민들의 한마디</b>'+
+ '<div class="report-pull"><b>👥 시민들의 한마디</b>'+
  lines.map((voice,i)=>'<div class="citizen-row">'+art(citizenArt(event?.id||"disaster",choiceIndex,i),"citizen-art")+
  '<p class="citizen-voice">💬 '+safe(voice)+'</p></div>').join("")+
  '</div><div class="rule"></div><h3>📊 이번 결정의 게임 지표 변화</h3>'+effectHTML(n.delta)+
@@ -407,7 +424,7 @@ function ending(){
  art(game.elected&&game.term===2?"win":"desk","ending-art")+
  '<h2>대통령 퇴임식 🎉</h2><p>'+safe(game.name)+' 대통령님의 바가늠공화국 국정 운영이 종료되었습니다.</p>'+
  '<div class="notice">최종 임기: '+game.term+'기 · 국정 현안 '+game.history.filter(h=>h.category!=="선거").length+'건 처리</div></section>'+
- statsHTML()+'<section class="card"><h3>📜 국정 운영 결과</h3>'+btn("전체 정책과 뉴스 기록 보기","history")+btn("새 게임 시작하기","reset","","secondary")+'</section>';
+ statsHTML()+badgesHTML()+'<section class="card"><h3>📜 국정 운영 결과</h3>'+btn("전체 정책과 뉴스 기록 보기","history")+btn("새 게임 시작하기","reset","","secondary")+'</section>';
 }
 function historyPage(){
  return '<section class="card archive-card"><div class="flag-head"><div><span class="tag">PRESIDENTIAL ARCHIVE</span><h2>📜 국정 운영 기록</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님의 모든 정책과 뉴스 기록입니다.</p>'+
