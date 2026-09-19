@@ -50,3 +50,9 @@
 ## 손그림 원본 및 동적 연출 업데이트
 
 `assets/` 폴더에서 `president-desk.png`, `news-paper.png`, `citizen-happy.png`, `citizen-worried.png`, `citizen-angry.png`, `result-supply.png`, `result-repair.png`, `secret-letter.png`, `election-win.png`, `election-lose.png` 등 10장의 독립 PNG 이미지를 사용합니다. 기존 2×5 스프라이트는 게임 화면에 사용하지 않습니다. 뉴스의 「시민들의 한마디」에서 인물 표정을 크게 보여주고, 선택 결과에 결정 완료 도장, 사건 등장 효과, 지표 막대 애니메이션, 대통령 일지 스탬프를 추가했습니다. 동작 최소화 설정을 사용하는 경우 화면 애니메이션을 생략합니다. 개편 전 디자인은 [`backup-before-original-art-gameplay`](https://github.com/jiminhong97/president-simulator/tree/backup-before-original-art-gameplay) 브랜치에 보관되어 있습니다.
+
+## 4.0 모바일 집무실 화면 전환
+
+기존 긴 스크롤형 진행 화면을 **집무실 → 사건 보고 → 대응안 선택 → 속보 확인** 장면으로 분리했습니다. 화면 하단의 고정 메뉴에서 집무실, 내각, 뉴스, 국정 지표를 별도로 볼 수 있습니다. 한 번에 전체 내각·뉴스·국정 기록을 보여주지 않으며, 참모 조언과 추가 시민 반응은 펼쳐서 볼 수 있습니다. 기존 손그림 PNG·국기·사건 및 정책 데이터·재선 시스템·브라우저 자동 저장 키(`starlight_president_v2`)를 그대로 사용합니다.
+
+**4.0 이전 버전으로 돌아가기:** [`backup-before-compact-game-4-0`](https://github.com/jiminhong97/president-simulator/tree/backup-before-compact-game-4-0) 브랜치에 업데이트 직전 `main` 전체를 보관했습니다. 4.0 코드를 배포하기 전 상태가 보존된 별도 브랜치이며, 필요하면 이 브랜치의 내용을 `main`으로 다시 적용할 수 있습니다.

@@ -117,6 +117,7 @@ const CAMPAIGNS=[
  {name:"대규모 선거 유세",desc:"전국 단위 선거 유세를 진행합니다.",delta:[8,-20,0,0]}
 ];
 let game=null;
+let uiTab="home",uiScene="desk",uiNewsExpanded=false;
 const app=document.getElementById("app");
 
 const ART={
@@ -204,7 +205,7 @@ function deck(){let international=shuffle(EVENTS.filter(e=>e.cat==="외교").map
  let selection=shuffle(international.concat(domestic));selection.splice(3,0,"secret");return selection;}
 function load(){try{let v=JSON.parse(localStorage.getItem(KEY));if(v&&v.version===2&&typeof v.name==="string"&&v.stats&&Array.isArray(v.deck)&&Array.isArray(v.history)&&Array.isArray(v.news))return v;}catch(e){}return null;}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(game));}catch(e){console.warn("자동 저장 실패",e);}}
-function go(phase){game.phase=phase;persist();render();window.scrollTo(0,0);}
+function go(phase){game.phase=phase;uiTab="home";uiScene="desk";uiNewsExpanded=false;persist();render();window.scrollTo(0,0);}
 function btn(label,action,extra,css){return '<button class="'+(css||"")+'" data-action="'+action+'" '+(extra||"")+'>'+label+'</button>';}
 function effectHTML(d){return '<div class="effects">'+d.map((n,i)=>'<span>'+LABELS[i]+' '+(n>0?"+":"")+n+'</span>').join("")+'</div>';}
 function statsHTML(){return '<div class="stats">'+Object.keys(game.stats).map((k,i)=>{
@@ -228,6 +229,7 @@ function start(){
  let name=document.getElementById("president-name").value.trim().slice(0,20);
  if(!name){alert("대통령 이름을 입력해 주세요.");return;}
  if(load()&&!confirm("기존 저장 기록을 지우고 새 게임을 시작할까요?"))return;
+ uiTab="home";uiScene="desk";uiNewsExpanded=false;
  game={version:2,phase:"appoint",name,term:1,turn:0,appointIndex:0,letterOpened:false,followup:null,stats:{approval:50,budget:100,economy:50,relations:50},cabinet:{},deck:[],history:[],news:[],latest:null,elected:false,previousPhase:"game"};
  persist();render();
 }
@@ -337,25 +339,21 @@ function secondTerm(){
  if(game.phase!=="electionResult"||!game.elected)return;
  game.term=2;game.turn=0;game.letterOpened=false;game.followup=null;game.appointIndex=0;game.cabinet={};game.deck=[];game.latest=null;go("appoint");
 }
-function reset(){if(!confirm("저장된 게임 기록을 삭제하고 처음부터 시작할까요?"))return;try{localStorage.removeItem(KEY);}catch(e){}game=null;render();}
+function reset(){if(!confirm("저장된 게임 기록을 삭제하고 처음부터 시작할까요?"))return;try{localStorage.removeItem(KEY);}catch(e){}game=null;uiTab="home";uiScene="desk";uiNewsExpanded=false;render();}
 function intro(){
- let saved=load();
- return '<section class="card hero"><span class="tag">WELCOME TO BAGANEUM REPUBLIC</span>'+
- '<p class="stage-kicker">★ 오늘부터, 내가 대통령</p><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
- '<p>당신의 결정으로 움직이는 작은 공화국. 내각을 꾸리고, 국가 위기에 대응하고, 재선에 도전하세요.</p>'+
- art("desk","hero-art")+
- '<div class="flag-stage intro-flag"><img src="assets/baganeum-flag.png?v=20260919-2" alt="직접 그린 바가늠공화국 국기"></div>'+
- (saved?'<div class="notice">💾 저장된 게임: '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume")+'<div class="rule"></div>':"")+
- '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="이름을 입력하세요" autocomplete="off">'+
- btn("🏛️ 취임 선서하고 시작하기 →","start")+'</section>'+
- '<section class="card"><span class="tag">HOW TO PLAY</span><h3>대통령의 첫 번째 국정 과제</h3><p>👔 나만의 내각 구성<br>📋 매 임기 8개의 국정 결정<br>📡 선택에 따라 달라지는 뉴스와 시민 반응<br>⚠️ 이전 결정에서 이어지는 후속 사건<br>🗳️ 첫 임기 종료 후 재선 도전</p></section>';
+ const saved=load();
+ return '<section class="compact-intro"><span class="tag">WELCOME TO BAGANEUM REPUBLIC</span><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
+ '<p>국정을 운영하고, 위기에 대응하고, 재선에 도전하는 손그림 게임.</p>'+art("desk","intro-desk")+
+ (saved?'<div class="notice">💾 저장된 게임 · '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume"):"")+
+ '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" autocomplete="off" placeholder="이름을 입력하세요">'+
+ btn("🏛️ 대통령 취임하기 →","start")+
+ '<details class="intro-howto"><summary>게임 방법 확인하기</summary><p>장관을 임명하고, 사건을 보고받고, 정책을 선택한 뒤 뉴스에서 결과를 확인해요. 임기 종료 후 재선에도 도전할 수 있어요.</p></details></section>';
 }
 function appointment(){
- let role=ROLES[game.appointIndex];
- return '<section class="card dark"><span class="tag">CABINET · '+game.term+'기 '+(game.appointIndex+1)+' / 3</span>'+
- '<div class="flag-head"><div><p class="stage-kicker light">대통령의 첫 번째 임무</p><h2>'+role.title+' 임명</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png?v=20260919-2\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
- '<p>'+safe(game.name)+' 대통령님, 함께 국정을 운영할 인물을 선택하세요. 임명한 사람에 따라 정책의 게임 지표가 달라집니다.</p></section>'+
- role.people.map((p,i)=>'<section class="card"><span class="tag">CANDIDATE 0'+(i+1)+'</span><h2>'+p.name+'</h2><p><b>'+p.style+'</b></p><div class="notice">'+p.detail+'</div>'+btn(p.name+" 임명하기 →","appoint",'data-index="'+i+'"')+'</section>').join("");
+ const role=ROLES[game.appointIndex];
+ if(!role)return '<section class="compact-panel"><h2>내각 임명이 완료됐습니다.</h2></section>';
+ return '<section class="compact-panel tab-panel appoint-scene"><span class="tag">CABINET · '+game.term+'기 · '+(game.appointIndex+1)+'/3</span><h2>👔 '+safe(role.title)+' 임명</h2><p class="scene-lede">함께 국정을 운영할 인물을 선택하세요.</p>'+
+ role.people.map((p,i)=>'<div class="appointee"><strong>'+safe(p.name)+'</strong><span>'+safe(p.style)+'</span><p>'+safe(p.detail)+'</p>'+btn(safe(p.name)+" 임명하기 →","appoint",'data-index="'+i+'"')+'</div>').join("")+'</section>';
 }
 function advice(e){
  return '<section class="card"><h3>💬 참모 회의</h3>'+
@@ -431,21 +429,115 @@ function historyPage(){
  (game.history.length?game.history.map(h=>'<div class="rule"></div><p><b>'+h.term+'기 · '+h.turn+'번째 · '+h.title+'</b><br>선택: '+h.choice+'</p><p class="muted small">'+h.story+'</p>'+effectHTML(h.delta)).join(""):"<p>아직 국정 기록이 없습니다.</p>")+
  btn("이전 화면으로 돌아가기","back")+'</section>';
 }
-function render(){
- let page=!game?intro():({
-  appoint:appointment,play:play,news:news,followup:followup,election:electionPage,
-  electionResult:electionResult,end:ending,history:historyPage
- }[game.phase]||intro)();
- app.innerHTML=page;
+
+function miniStats(){return '<div class="mini-stats"><span>❤️ 지지도 <b>'+game.stats.approval+'%</b></span><span>💰 재정 <b>'+game.stats.budget+'</b></span></div>'}
+function currentIncident(){
+ if(game.phase==="followup"){const x=FOLLOWUP[game.followup];return x?{title:x.title,desc:x.desc,cat:"후속 사건",followup:true}:null;}
+ return game.phase==="play"?eventAt():null;
 }
+function compactDesk(){
+ const e=currentIncident();if(!e)return '<section class="compact-panel"><h2>새로운 보고가 없습니다.</h2></section>';
+ return '<section class="compact-panel desk-scene"><span class="tag">🏛️ 대통령 집무실</span>'+
+ art("desk","desk-main")+'<h2>'+safe(game.name)+' 대통령님!</h2>'+
+ '<p class="scene-lede">'+(e.id==="secret"?"💌 책상 위에 특별한 편지가 도착했습니다.":e.followup?"📬 이전 결정에 따른 추가 보고가 도착했습니다.":"🔔 새로운 국정 보고가 도착했습니다.")+'</p>'+
+ btn(e.id==="secret"?"편지 확인하기 →":"국정 보고 받기 →","scene",'data-scene="report"')+
+ '<div class="progress-dots mini-dots">'+Array.from({length:ROUNDS},(_,i)=>'<i class="'+(i<game.turn?"done":i===game.turn?"now":"")+'"></i>').join("")+'</div></section>';
+}
+function compactReport(){
+ const e=currentIncident();if(!e)return compactDesk();const closed=e.id==="secret"&&!game.letterOpened;
+ return '<section class="compact-panel report-scene"><div class="scene-heading"><span class="tag">'+safe(e.cat)+' · 국정 보고</span>'+btn("↩ 집무실","scene",'data-scene="desk"',"mini-back")+'</div>'+
+ (e.id==="secret"?(closed?'<button type="button" class="letter-tap compact-letter" data-action="openLetter" aria-label="편지 그림을 눌러 열기">'+art("letter","letter-art")+'<span>봉투를 눌러 열어보세요 ↗</span></button>':art("letter","report-art")):
+ e.followup?art(game.followup==="supply"?"repair":"supply","report-art"):art("desk","report-art"))+
+ '<h2>'+safe(closed?"대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2><p class="scene-lede">'+safe(closed?"대통령님만 열어볼 수 있는 특별한 봉투입니다.":e.desc)+'</p>'+
+ (e.id==="secret"&&!closed?'<div class="letter compact-message"><b>대통령 전용 서신</b><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
+ (closed?'<p class="compact-hint">편지 그림을 누르면 내용이 열려요.</p>':btn("대응 방안 선택하기 →","scene",'data-scene="decision"'))+'</section>';
+}
+function compactDecision(){
+ const e=currentIncident();if(!e)return compactDesk();if(e.id==="secret"&&!game.letterOpened)return compactReport();
+ const options=e.followup?FOLLOWUP[game.followup].options:e.options;
+ return '<section class="compact-panel decision-scene"><div class="scene-heading"><span class="tag">✍️ 대통령의 결정</span>'+btn("↩ 보고서","scene",'data-scene="report"',"mini-back")+'</div>'+
+ '<h2>'+safe(e.title)+'</h2><p class="scene-lede">어떤 대응을 선택하시겠습니까?</p><div class="compact-choices">'+
+ options.map((o,i)=>btn('<strong>'+(i+1)+'. '+safe(o[0])+'</strong><small>게임 지표 변화</small>'+effectHTML(e.followup?o[1]:impacts(o,e)),e.followup?"followupChoice":"choose",'data-index="'+i+'"',"choice compact-choice")).join("")+'</div>'+
+ '<details class="advice-drawer"><summary>👔 참모 의견 보기</summary><div class="drawer-copy">'+
+ (e.followup?'<p>이전 선택에 따른 후속 사건입니다. 대응별 지표 변화를 확인하세요.</p>':
+ '<p>경제부 장관 '+safe(person("economy").name)+': 재정은 '+game.stats.budget+'입니다.</p><p>외교부 장관 '+safe(person("foreign").name)+': 국제관계 지수는 '+game.stats.relations+'입니다.</p><p>비서실장 '+safe(person("chief").name)+': 결정 후 시민 반응을 확인하세요.</p>')+'</div></details></section>';
+}
+function compactOutcome(){
+ const n=game.latest;if(!n)return '<section class="compact-panel"><h2>뉴스가 없습니다.</h2></section>';
+ const e=EVENTS.find(e=>e.title===n.title),ci=e?e.options.findIndex(o=>o[0]===n.choice):0,lines=String(n.reaction||"").split("\n").filter(Boolean);
+ return '<section class="compact-panel outcome-scene"><div class="scene-heading"><span class="tag">● BREAKING NEWS</span><b>바가늠일보</b></div>'+
+ '<div class="headline-row">'+art(n.scene&&n.scene!=="newspaper"?n.scene:"newspaper","outcome-art")+
+ '<div><span class="eyebrow">'+safe(n.category)+' · '+game.term+'기</span><h2>'+safe(n.title)+'</h2></div></div>'+
+ '<span class="decision-stamp compact-stamp">국정 결정 완료 ✓</span><p class="scene-lede">'+safe(n.story)+'</p>'+
+ '<div class="effect-summary"><b>📊 이번 결정의 지표 변화</b>'+effectHTML(n.delta)+'</div>'+
+ '<div class="compact-reactions"><b>👥 시민들의 한마디</b>'+
+ (uiNewsExpanded?lines:lines.slice(0,1)).map((v,k)=>'<div class="citizen-row">'+art(citizenArt(e?.id||"disaster",ci,k),"citizen-art")+'<p class="citizen-voice">'+safe(v)+'</p></div>').join("")+
+ (lines.length>1?btn(uiNewsExpanded?"간단히 보기":"다른 시민 반응 보기 +","toggleReactions","","mini-link"):"")+'</div>'+
+ btn(n.isFollowup?"다음 국정 현안 →":game.turn+1===ROUNDS?"임기 결과 확인 →":"다음 국정 현안 →","next")+'</section>';
+}
+function compactCabinet(){
+ if(game.phase==="appoint")return appointment();
+ return '<section class="compact-panel tab-panel"><span class="tag">MY CABINET</span><h2>👔 나의 내각</h2>'+
+ ROLES.map(r=>'<div class="cabinet-person"><strong>'+safe(r.title)+' · '+safe(person(r.id).name)+'</strong><p>'+safe(person(r.id).style)+'</p><small>'+safe(person(r.id).detail)+'</small></div>').join("")+
+ '<p class="compact-hint">정책 선택 화면에서 참모 의견을 확인할 수 있어요.</p></section>';
+}
+function compactArchive(){
+ return '<section class="compact-panel tab-panel"><span class="tag">BAGANEUM DAILY</span><h2>📰 국정 뉴스</h2>'+
+ (game.history.length?game.history.slice().reverse().map(n=>'<details class="news-entry"><summary><span class="eyebrow">'+safe(n.term)+'기 · '+safe(n.category)+'</span><strong>'+safe(n.title)+'</strong></summary><p>'+safe(n.story)+'</p><p><b>결정:</b> '+safe(n.choice)+'</p>'+effectHTML(n.delta)+'</details>').join(""):'<p class="empty-state">아직 뉴스가 없습니다. 국정을 진행해 보세요.</p>')+'</section>';
+}
+function compactState(){
+ return '<section class="compact-panel tab-panel"><span class="tag">REPUBLIC STATUS</span><h2>📊 국가 현황</h2>'+
+ statsHTML()+badgesHTML()+
+ '<details class="status-details"><summary>게임 정보 및 저장</summary><p>이 게임의 모든 국가·뉴스·선거 결과는 가상 설정입니다. 진행 정보는 현재 기기의 브라우저에 자동 저장됩니다.</p><p>'+safe(game.name)+' 대통령 · '+game.term+'기</p>'+btn("새 게임 시작하기","reset","","secondary")+'</details></section>';
+}
+function compactElection(){
+ return '<section class="compact-panel tab-panel"><span class="tag">ELECTION DAY</span><h2>🗳️ 재선 도전</h2>'+
+ '<p class="scene-lede">첫 번째 임기가 끝났습니다. 선거 활동을 하나 선택하세요.</p>'+
+ CAMPAIGNS.map((c,i)=>btn('<strong>'+safe(c.name)+'</strong><small>'+safe(c.desc)+'</small>'+effectHTML(c.delta),"election",'data-index="'+i+'"',"choice compact-choice")).join("")+
+ '<details class="status-details"><summary>가상 선거 결과 조건 확인</summary><p>게임 전용 조건: 지지도 58, 경제 45, 재정 15, 국제관계 35 이상입니다. 실제 선거 예측 규칙이 아닙니다.</p>'+statsHTML()+'</details>'+
+ btn("재선에 도전하지 않고 퇴임","retire","","secondary")+'</section>';
+}
+function compactResult(){
+ return '<section class="compact-panel result-panel"><span class="tag">ELECTION RESULT</span>'+art(game.elected?"win":"lose","result-art")+
+ '<h2>'+(game.elected?"🎉 재선 성공!":"🏛️ 제1기 임기 종료")+'</h2>'+
+ '<p class="scene-lede">'+(game.elected?"두 번째 임기를 시작할 수 있습니다.":"가상 선거에서 재선에 실패했습니다.")+'</p>'+
+ btn(game.elected?"제2기 대통령 취임하기 →":"퇴임 및 최종 기록 확인 →",game.elected?"second":"finish")+'</section>';
+}
+function compactEnding(){
+ return '<section class="compact-panel result-panel"><span class="tag">PRESIDENTIAL FAREWELL</span>'+art(game.elected&&game.term===2?"win":"desk","result-art")+
+ '<h2>🎉 대통령 퇴임식</h2><p class="scene-lede">'+safe(game.name)+' 대통령님의 국정 운영이 종료되었습니다.</p>'+
+ '<p>최종 임기 '+game.term+'기 · 국정 결정 '+game.history.filter(n=>n.category!=="선거").length+'건</p>'+
+ btn("국정 기록 보기 →","tab",'data-tab="newslog"')+btn("새 게임 시작하기","reset","","secondary")+'</section>';
+}
+function homePanel(){
+ if(game.phase==="play"||game.phase==="followup")return uiScene==="decision"?compactDecision():uiScene==="report"?compactReport():compactDesk();
+ return {appoint:appointment,news:compactOutcome,election:compactElection,electionResult:compactResult,end:compactEnding,history:compactArchive}[game.phase]?.()||compactDesk();
+}
+function gameNav(){
+ return '<nav class="game-nav" aria-label="게임 메뉴">'+[["home","🏠","집무실"],["cabinet","👔","내각"],["newslog","📰","뉴스"],["state","📊","국정"]].map(([id,icon,label])=>
+ '<button type="button" data-action="tab" data-tab="'+id+'" class="'+(uiTab===id?"active":"")+'" aria-label="'+label+'" aria-current="'+(uiTab===id?"page":"false")+'"><span aria-hidden="true">'+icon+'</span><small>'+label+'</small></button>').join("")+'</nav>';
+}
+function render(){
+ if(!game){app.innerHTML=intro();return;}
+ if(game.phase==="history"){game.phase=["play","news","followup","appoint","election","electionResult","end"].includes(game.previousPhase)?game.previousPhase:"play";persist();}
+ const panel=uiTab==="cabinet"?compactCabinet():uiTab==="newslog"?compactArchive():uiTab==="state"?compactState():homePanel();
+ app.innerHTML='<div class="game-shell"><div class="compact-top"><div><span class="eyebrow">BAGANEUM · '+safe(game.name)+' 대통령</span><strong>'+
+ (game.phase==="appoint"?"내각 구성":game.phase==="election"?"선거일":game.phase==="end"?"퇴임":"제"+game.term+"기 국정 운영")+'</strong></div>'+
+ '<span class="turn-pill">'+(game.phase==="appoint"?"임명 "+(game.appointIndex+1)+"/3":game.phase==="end"?"완료":"TURN "+Math.min(game.turn+1,ROUNDS)+"/"+ROUNDS)+'</span></div>'+
+ '<div class="game-viewport">'+(uiTab==="home"?'<div class="mini-stats"><span>❤️ 지지도 <b>'+game.stats.approval+'%</b></span><span>💰 재정 <b>'+game.stats.budget+'</b></span></div>':"")+panel+'</div></div>'+gameNav();
+}
+
 document.addEventListener("click",function(e){
  let b=e.target.closest("button[data-action]");if(!b)return;
  let action=b.dataset.action,i=Number(b.dataset.index);
  if(action==="start")start();
- else if(action==="resume"){let saved=load();if(saved){game=saved;render();}}
+ else if(action==="resume"){let saved=load();if(saved){game=saved;uiTab="home";uiScene="desk";uiNewsExpanded=false;render();}}
  else if(action==="appoint")appoint(i);
  else if(action==="choose")choose(i);
  else if(action==="openLetter")openLetter();
+ else if(action==="tab"&&["home","cabinet","newslog","state"].includes(b.dataset.tab)){uiTab=b.dataset.tab;render();}
+ else if(action==="scene"&&["desk","report","decision"].includes(b.dataset.scene)){uiScene=b.dataset.scene;render();}
+ else if(action==="toggleReactions"){uiNewsExpanded=!uiNewsExpanded;render();}
  else if(action==="followupChoice")chooseFollowup(i);
  else if(action==="next")next();
  else if(action==="election")election(i);
