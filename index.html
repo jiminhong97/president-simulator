@@ -343,7 +343,7 @@ function reset(){if(!confirm("저장된 게임 기록을 삭제하고 처음부�
 function intro(){
  const saved=load();
  return '<section class="compact-intro"><span class="tag">WELCOME TO BAGANEUM REPUBLIC</span><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
- '<p>국정을 운영하고, 위기에 대응하고, 재선에 도전하는 손그림 게임.</p>'+art("desk","intro-desk")+
+ '<p>국정을 운영하고, 위기에 대응하고, 재선에 도전하는 하느미 전용 게임.</p>'+art("desk","intro-desk")+
  (saved?'<div class="notice">💾 저장된 게임 · '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume"):"")+
  '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" autocomplete="off" placeholder="이름을 입력하세요">'+
  btn("🏛️ 대통령 취임하기 →","start")+
@@ -376,7 +376,7 @@ function play(){
  '<h2>'+(closed?"💌 대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2>'+
  (closed?'<p>대통령님만 열어볼 수 있는 특별한 봉투입니다.</p>':
  '<p>'+e.desc+'</p>'+
- (secret?'<div class="letter"><strong>대통령 전용 서신</strong><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
+ (secret?'<div class="letter"><strong>대통령 전용 서신</strong><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 하느미 엉더니 말랑말랑 히히 ❤️</p></div>':"")+
  '<div class="rule"></div><h3>어떤 결정을 내리시겠습니까?</h3>'+
  e.options.map((o,i)=>btn('<strong>0'+(i+1)+' · '+o[0]+'</strong><small>선택 시 바뀌는 게임 지표</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join(""))+
  '</section>'+(closed?"":advice(e))+
@@ -449,7 +449,7 @@ function compactReport(){
  (e.id==="secret"?(closed?'<button type="button" class="letter-tap compact-letter" data-action="openLetter" aria-label="편지 그림을 눌러 열기">'+art("letter","letter-art")+'<span>봉투를 눌러 열어보세요 ↗</span></button>':art("letter","report-art")):
  e.followup?art(game.followup==="supply"?"repair":"supply","report-art"):art("desk","report-art"))+
  '<h2>'+safe(closed?"대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2><p class="scene-lede">'+safe(closed?"대통령님만 열어볼 수 있는 특별한 봉투입니다.":e.desc)+'</p>'+
- (e.id==="secret"&&!closed?'<div class="letter compact-message"><b>대통령 전용 서신</b><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
+ (e.id==="secret"&&!closed?'<div class="letter compact-message"><b>대통령 전용 서신</b><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 하느미 엉더니 말랑말랑 히히 ❤️</p></div>':"")+
  (closed?'<p class="compact-hint">편지 그림을 누르면 내용이 열려요.</p>':btn("대응 방안 선택하기 →","scene",'data-scene="decision"'))+'</section>';
 }
 function compactDecision(){
