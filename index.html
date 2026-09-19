@@ -159,11 +159,81 @@ function appoint(i){
  game.cabinet[role.id]=i;game.appointIndex++;
  if(game.appointIndex===ROLES.length){game.deck=deck();go("play");}else go("appoint");
 }
+
+// 가상 시민들의 반응: 현안·선택지에 따라 서로 다른 두 목소리가 등장합니다.
+// 실제 여론 조사나 정책 효과가 아닌 게임 내 창작 대사입니다.
+const REACTIONS={
+ housing:[
+  ["청년 입주 신청자: 공공주택 모집 일정이 언제 나오는지 궁금해요.","지역 주민: 새 주택이 들어설 곳의 교통과 학교 대책도 함께 알려주세요."],
+  ["건설업 종사자: 공급 사업이 언제 시작될지 지켜보고 있어요.","주거 지원 단체: 새로 공급되는 집의 임대료가 얼마나 될지도 중요해요."]
+ ],
+ recession:[
+  ["동네 가게 사장님: 요즘 줄어든 손님이 다시 늘면 좋겠어요.","재정 연구자: 사업이 언제 끝나고 얼마가 쓰이는지도 공개해 주세요."],
+  ["소상공인: 매출이 회복될 때까지는 당분간 힘들 것 같아요.","시민: 재정을 아끼는 이유와 향후 대책을 더 알고 싶어요."]
+ ],
+ disaster:[
+  ["침수 피해 주민: 당장 필요한 물품을 구하는 데 도움이 되겠어요.","자원봉사자: 지원금을 신청하기 어려운 분들도 챙겨 주세요."],
+  ["현장 복구 인력: 도로가 뚫리면 구호 물품을 전달하기 쉬워져요.","이재민: 집을 잃은 사람을 위한 임시 거처도 필요해요."]
+ ],
+ education:[
+  ["학부모: 학교에서 받을 수 있는 지원이 늘어날지 기대돼요.","교사: 예산만큼 현장 인력과 교육 환경도 살펴주세요."],
+  ["학생: 새로운 기술을 직접 배울 기회가 생기면 좋겠어요.","지역 학교 관계자: 작은 학교도 연구·교육 지원에 참여할 수 있나요?"]
+ ],
+ energy:[
+  ["택배 기사: 최근 오른 연료비 부담이 조금 줄면 좋겠어요.","시민: 지원 대상과 신청 방법이 궁금해요."],
+  ["에너지 업계 종사자: 공급 계약의 세부 내용이 궁금합니다.","가정 사용자: 새 공급처를 확보해도 당장 요금이 내려갈지는 지켜봐야겠어요."]
+ ],
+ jobs:[
+  ["취업 준비생: 어떤 직무와 지역에서 채용하는지 알고 싶어요.","현장 관리자: 채용 후에도 일을 배울 기회가 있으면 좋겠어요."],
+  ["청년 창업자: 창업 비용 지원이 실제로 언제 시작되나요?","구직자: 취업 준비에 필요한 교육도 함께 마련되면 좋겠어요."]
+ ],
+ health:[
+  ["지역 주민: 가까운 곳에서 진료받을 수 있으면 좋겠어요.","의료진: 새 시설과 함께 일할 인력도 충분히 확보해 주세요."],
+  ["간호학과 학생: 지역 근무 지원 조건을 자세히 알고 싶어요.","환자 보호자: 인력을 양성하는 동안의 진료 공백 대책도 필요해요."]
+ ],
+ technology:[
+  ["연구원: 새로운 연구 과제에 참여할 기회가 늘겠어요.","시민: 연구 성과가 일상에서 어떻게 활용될지도 궁금해요."],
+  ["창업자: 작은 팀도 지원받을 수 있는지 확인하고 있어요.","대학원생: 연구 인력과 장비 지원 조건이 궁금해요."]
+ ],
+ cyber:[
+  ["민원 신청자: 행정 서비스가 언제 복구되는지 알려 주세요.","IT 운영자: 급한 기능부터 순서대로 복구하고 있어요."],
+  ["보안 담당자: 장애 원인과 재발 방지책을 함께 검토해야겠어요.","민원 신청자: 시스템 개편 중에도 필요한 서류를 발급받을 수 있나요?"]
+ ],
+ environment:[
+  ["산업단지 인근 주민: 오염 수치를 알기 쉽게 공개해 주세요.","현장 기술자: 시설을 설치한 뒤 유지 관리도 중요해요."],
+  ["공장 운영자: 설비 전환에 필요한 일정과 지원 조건이 궁금해요.","인근 주민: 바뀐 설비가 주변 환경에 어떤 영향을 주는지 살펴봐 주세요."]
+ ],
+ trade:[
+  ["수출업체 직원: 새 거래처와 계약할 기회가 생길지 궁금해요.","지역 생산자: 협정에 따라 달라지는 수입 조건도 살펴봐 주세요."],
+  ["지역 제조업체: 협상에서 우리 업종의 조건이 어떻게 정해졌나요?","물류업 종사자: 남은 협상 의제가 언제 다시 논의될지 궁금해요."]
+ ],
+ summit:[
+  ["문화 교류 참가자: 양국을 오가는 프로그램이 생길지 기대돼요.","중소기업 대표: 협정 세부 내용과 참여 절차를 알려 주세요."],
+  ["구조대원: 공동 훈련 계획이 마련되면 좋겠어요.","국제 협력 담당자: 위기 시 연락할 창구부터 정하면 좋겠어요."]
+ ],
+ supply:[
+  ["수입업체: 새로운 공급처의 납기 조건이 궁금해요.","소비자: 공급이 안정되면 제품을 구하기 쉬워질까요?"],
+  ["생산시설 근로자: 신규 시설의 채용 계획이 궁금해요.","무역업체: 국내 생산이 늘어도 수입 경로는 계속 관리해야겠어요."]
+ ],
+ foreignDisaster:[
+  ["구호 단체 활동가: 현지에서 가장 필요한 물품을 먼저 확인하겠습니다.","현지 교민: 구호 인력이 도착하는 일정이 궁금해요."],
+  ["복구 기술자: 현지 시설 상황부터 파악해야겠어요.","구호 단체 활동가: 긴급 지원과 장기 복구 계획을 함께 조율하면 좋겠어요."]
+ ],
+ secret:[
+  ["집무실 직원: 대통령님 앞으로 온 특별 편지는 잘 전달했어요.","편지 배달원: 답장은 천천히 보내셔도 됩니다. 💌"],
+  ["축제 참가자: 오늘 작은 행사가 열려서 기분이 좋아요.","편지 배달원: 대통령님께 특별한 편지가 또 도착할지도 몰라요. 💌"]
+ ]
+};
+function citizenReaction(event,choiceIndex){
+ const pair=REACTIONS[event.id]?.[choiceIndex];
+ if(!pair)return "시민: 다음 국정 발표를 지켜보고 있어요.";
+ return pair.join("\n");
+}
 function choose(i){
  if(game.phase!=="play")return;
  let e=eventAt();if(!e||!e.options[i])return;
  let c=e.options[i],d=impacts(c,e);apply(d);
- let reaction=d[0]>0?"정책 발표 후 기대를 나타내는 시민들의 반응이 나왔습니다. 후속 조치를 지켜보자는 의견도 이어졌습니다.":d[0]<0?"정책 발표 후 우려를 나타내는 시민들의 반응이 나왔습니다. 정부의 설명을 요청하는 목소리도 나왔습니다.":"시민들 사이에서 다양한 반응이 나왔습니다. 향후 추진 과정에 관심이 모이고 있습니다.";
+ let reaction=citizenReaction(e,i);
  let item={term:game.term,turn:game.turn+1,category:e.cat,title:e.title,choice:c[0],story:c[2],reaction,delta:d};
  game.latest=item;game.news.unshift(item);game.history.push(item);go("news");
 }
@@ -231,7 +301,7 @@ function news(){
  return '<section class="card dark"><span class="tag">PRESIDENTIAL BRIEFING</span><div class="flag-head"><div><h2>📡 국정 브리핑</h2><p>'+safe(game.name)+' 대통령 · '+game.term+'기</p></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div></section>'+statsHTML()+
  '<section class="card"><div class="news-masthead"><div><strong>바가늠일보</strong><p class="small muted">BAGANEUM DAILY · 가상 뉴스</p></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
  '<div class="ticker">● BREAKING NEWS · 속보</div><div class="news"><span class="tag">'+n.category+'</span><h3>'+n.title+'… 정부, '+n.choice+' 발표</h3><p>'+n.story+'</p></div>'+
- '<div class="report-pull"><b>👥 시민들의 반응</b><p>'+n.reaction+'</p></div><div class="rule"></div><h3>📊 이번 결정의 게임 지표 변화</h3>'+effectHTML(n.delta)+
+ '<div class="report-pull"><b>👥 가상 시민들의 한마디</b>'+safe(n.reaction).split("\n").map(voice=>'<p class="citizen-voice">💬 '+voice+'</p>').join("")+'</div><div class="rule"></div><h3>📊 이번 결정의 게임 지표 변화</h3>'+effectHTML(n.delta)+
  '<div class="notice">이 뉴스와 시민 반응, 정책 효과는 모두 게임을 위한 가상 설정입니다.</div>'+
  btn(game.turn+1===ROUNDS?"임기 종료 및 결과 확인 →":"다음 국정 현안 →","next")+
  btn("전체 뉴스 보기","history","","secondary")+'</section>';
