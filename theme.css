@@ -102,3 +102,7 @@ footer{color:#687e7e;font-size:11px;padding:15px 8px}
 p,.notice,.advice,.news,.letter,.report-pull{ text-wrap:pretty; }
 h1,h2,h3{ text-wrap:balance; }
 .choice strong,.choice small,.effect,.stat span{word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
+
+/* 뉴스 속 인물별 대사를 별도 말풍선으로 표시 */
+.citizen-voice{background:#fff;border:1px solid #d6e4d4;border-radius:12px;padding:10px 12px;margin:9px 0 0;color:#2e4a42;font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
+.citizen-voice:nth-of-type(even){background:#fff8ed;border-color:#efdcc6}
