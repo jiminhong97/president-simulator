@@ -146,10 +146,9 @@ function impacts(option,event){
 function apply(d){Object.keys(game.stats).forEach((k,i)=>game.stats[k]=clamp(game.stats[k]+d[i],0,k==="budget"?150:100));}
 function start(){
  let name=document.getElementById("president-name").value.trim().slice(0,20);
- let message=document.getElementById("special-message").value.trim().slice(0,200);
  if(!name){alert("대통령 이름을 입력해 주세요.");return;}
  if(load()&&!confirm("기존 저장 기록을 지우고 새 게임을 시작할까요?"))return;
- game={version:2,phase:"appoint",name,message:message||"오늘도 수고했어! 임기가 끝나면 같이 맛있는 거 먹으러 가자 ❤️",term:1,turn:0,appointIndex:0,stats:{approval:50,budget:100,economy:50,relations:50},cabinet:{},deck:[],history:[],news:[],latest:null,elected:false,previousPhase:"game"};
+ game={version:2,phase:"appoint",name,term:1,turn:0,appointIndex:0,stats:{approval:50,budget:100,economy:50,relations:50},cabinet:{},deck:[],history:[],news:[],latest:null,elected:false,previousPhase:"game"};
  persist();render();
 }
 function appoint(i){
@@ -187,11 +186,10 @@ function secondTerm(){
 function reset(){if(!confirm("저장된 게임 기록을 삭제하고 처음부터 시작할까요?"))return;try{localStorage.removeItem(KEY);}catch(e){}game=null;render();}
 function intro(){
  let saved=load();
- return '<section class="card"><span class="tag">PRESIDENT SIMULATOR 2.0</span><h2>당신이 대통령이라면? 🇰🇷</h2><p>가상의 별빛공화국을 운영하세요. 장관을 임명하고, 랜덤 국가 위기와 외교 문제에 대응하고, 재선에 도전할 수 있습니다.</p>'+
+ return '<section class="card"><span class="tag">PRESIDENT SIMULATOR 2.0</span><h2>당신이 대통령이라면? 🇰🇷</h2><p>가상의 바가늠공화국을 운영하세요. 장관을 임명하고, 랜덤 국가 위기와 외교 문제에 대응하고, 재선에 도전할 수 있습니다.</p>'+
  (saved?'<div class="notice">💾 저장된 게임: '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기","resume")+'<div class="rule"></div>':"")+
- '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="남자친구 이름 입력" autocomplete="off">'+
- '<label for="special-message">비밀 이벤트에서 보여줄 응원 메시지</label><textarea id="special-message" maxlength="200" placeholder="대통령님, 오늘도 수고했어! ❤️"></textarea>'+
- '<div class="notice">💌 입력한 문구는 임기 중 특별한 편지로 등장합니다.</div>'+btn("대통령 취임하기","start")+'</section>';
+ '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="이름을 입력하세요" autocomplete="off">'+
+  btn("대통령 취임하기","start")+'</section>';
 }
 function appointment(){
  let role=ROLES[game.appointIndex];
@@ -209,7 +207,7 @@ function play(){
  if(!e)return '<section class="card"><h2>이벤트를 불러올 수 없습니다.</h2>'+btn("처음으로","reset")+'</section>';
  return '<section class="card dark"><span class="tag">'+game.term+'기 · '+(game.turn+1)+' / '+ROUNDS+'</span><h2>'+safe(game.name)+' 대통령</h2><p>국정 현안을 검토하고 정책을 결정하세요.</p></section>'+
  statsHTML()+'<section class="card"><span class="tag">'+e.cat+'</span><h2>'+e.title+'</h2><p>'+e.desc+'</p>'+
- (e.id==="secret"?'<div class="notice">💌 대통령님께 온 편지\n'+safe(game.message)+'</div>':"")+
+ (e.id==="secret"?'<div class="notice">💌 대통령님께 온 편지\n'+safe(game.name)+' 대통령님, 오늘도 수고했어! 바쁜 하루가 끝나면 나랑 맛있는 거 먹으러 가자 ❤️'+'</div>':"")+
  '<div class="rule"></div><h3>대통령님의 결정은?</h3>'+
  e.options.map((o,i)=>btn('<strong>'+(i+1)+'. '+o[0]+'</strong><small>게임 지표 예상 변화</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join("")+
  '</section>'+advice(e)+
@@ -233,7 +231,7 @@ function electionPage(){
  btn("재선에 도전하지 않고 퇴임","retire","","secondary")+'</section>';
 }
 function electionResult(){
- return '<section class="card center"><div style="font-size:42px">'+(game.elected?"🎉":"🏛️")+'</div><h2>'+(game.elected?"가상 선거 재선 성공!":"가상 선거 재선 실패")+'</h2><p>'+(game.elected?"별빛공화국의 두 번째 임기를 시작할 수 있습니다.":"대통령님의 임기가 종료되었습니다.")+'</p><div class="notice">가상의 게임 규칙에 따른 선거 결과입니다.</div></section>'+statsHTML()+
+ return '<section class="card center"><div style="font-size:42px">'+(game.elected?"🎉":"🏛️")+'</div><h2>'+(game.elected?"가상 선거 재선 성공!":"가상 선거 재선 실패")+'</h2><p>'+(game.elected?"바가늠공화국의 두 번째 임기를 시작할 수 있습니다.":"대통령님의 임기가 종료되었습니다.")+'</p><div class="notice">가상의 게임 규칙에 따른 선거 결과입니다.</div></section>'+statsHTML()+
  '<section class="card">'+(game.elected?btn("제2기 대통령 취임하기","second"):btn("퇴임 및 최종 기록 확인","finish"))+'</section>';
 }
 function ending(){
