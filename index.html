@@ -207,7 +207,7 @@ function play(){
  if(!e)return '<section class="card"><h2>이벤트를 불러올 수 없습니다.</h2>'+btn("처음으로","reset")+'</section>';
  return '<section class="card dark"><span class="tag">'+game.term+'기 · '+(game.turn+1)+' / '+ROUNDS+'</span><h2>'+safe(game.name)+' 대통령</h2><p>국정 현안을 검토하고 정책을 결정하세요.</p></section>'+
  statsHTML()+'<section class="card"><span class="tag">'+e.cat+'</span><h2>'+e.title+'</h2><p>'+e.desc+'</p>'+
- (e.id==="secret"?'<div class="notice">💌 대통령님께 온 편지\n'+safe(game.name)+' 대통령님, 오늘도 수고했어! 바쁜 하루가 끝나면 나랑 맛있는 거 먹으러 가자 ❤️'+'</div>':"")+
+ (e.id==="secret"?'<div class="notice">💌 대통령님께 온 편지\n'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️'+'</div>':"")+
  '<div class="rule"></div><h3>대통령님의 결정은?</h3>'+
  e.options.map((o,i)=>btn('<strong>'+(i+1)+'. '+o[0]+'</strong><small>게임 지표 예상 변화</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join("")+
  '</section>'+advice(e)+
