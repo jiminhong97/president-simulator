@@ -106,3 +106,31 @@ h1,h2,h3{ text-wrap:balance; }
 /* 뉴스 속 인물별 대사를 별도 말풍선으로 표시 */
 .citizen-voice{background:#fff;border:1px solid #d6e4d4;border-radius:12px;padding:10px 12px;margin:9px 0 0;color:#2e4a42;font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
 .citizen-voice:nth-of-type(even){background:#fff8ed;border-color:#efdcc6}
+
+/* Original hand-drawn story art: 10 drawings in one 2×5 sprite. */
+.story-art{
+ display:block;
+ width:100%;
+ aspect-ratio:120/112;
+ background-image:url("assets/story-sprite.png");
+ background-size:200% 500%;
+ background-repeat:no-repeat;
+ background-color:white;
+ border:1.5px solid #263b42;
+ border-radius:13px;
+ box-shadow:3px 3px 0 #eadcc6;
+ flex-shrink:0;
+}
+.hero-art{max-width:265px;margin:16px auto;transform:rotate(-2deg)}
+.desk-art{width:94px;max-width:32%;box-shadow:2px 2px 0 #d5e9c4}
+.event-card .letter-art{max-width:280px;margin:16px auto;transform:rotate(-1deg)}
+.paper-art{width:84px;border:0;box-shadow:none;border-radius:0}
+.scene-art{max-width:310px;margin:12px auto 18px;transform:rotate(-1deg)}
+.ending-art{max-width:320px;margin:14px auto 22px;transform:rotate(-1deg)}
+.citizen-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.citizen-art{width:63px;min-width:63px;height:59px;border-radius:12px;box-shadow:2px 2px 0 #d5deca}
+.citizen-voice{flex:1;min-width:0;margin:0;word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty}
+.event-card .choice{word-break:keep-all;overflow-wrap:break-word}
+.letter{animation:letter-reveal .28s ease-out}
+@keyframes letter-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.letter{animation:none}}

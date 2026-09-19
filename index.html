@@ -118,6 +118,67 @@ const CAMPAIGNS=[
 ];
 let game=null;
 const app=document.getElementById("app");
+
+const ART={
+ newspaper:[0,0,"직접 그린 바가늠일보 신문"],
+ happy:[100,0,"야호 하는 시민 그림"],
+ worried:[0,25,"걱정하는 시민 그림"],
+ angry:[100,25,"화난 시민 그림"],
+ supply:[0,50,"보급 물품을 받은 주민 그림"],
+ repair:[100,50,"복구 작업 그림"],
+ letter:[0,75,"직접 그린 비밀 편지"],
+ desk:[100,75,"대통령 책상에 앉은 캐릭터 그림"],
+ win:[0,100,"재선 성공 그림"],
+ lose:[100,100,"재선 실패 그림"]
+};
+function art(kind,extra=""){
+ const a=ART[kind]||ART.newspaper;
+ return '<div class="story-art art-'+kind+' '+extra+'" role="img" aria-label="'+a[2]+'" style="background-position:'+a[0]+'% '+a[1]+'%"></div>';
+}
+function citizenArt(eventId,index,voice){
+ if(eventId==="disaster")return index===0?(voice===0?"happy":"worried"):(voice===0?"happy":"worried");
+ if(eventId==="secret")return "happy";
+ return voice===0?(index===0?"happy":"worried"):(index===0?"worried":"angry");
+}
+const FOLLOWUP={
+  supply:{
+   title:"지원은 도착했지만, 다리가 아직 끊겨 있습니다!",
+   desc:"주민 지원을 먼저 결정한 뒤 침수된 다리의 복구 요청이 접수됐습니다. 어떤 임시 대응을 선택하시겠습니까?",
+   options:[
+    ["긴급 교량 보수팀 투입",[3,-10,4,0],"교량 보수를 위해 긴급 인력과 예산을 배치했습니다."],
+    ["임시 우회도로 마련",[2,-7,2,0],"주민들이 이용할 수 있는 임시 우회도로를 마련했습니다."]
+   ]
+  },
+  repair:{
+   title:"도로는 열렸지만, 임시 거처가 부족합니다!",
+   desc:"복구 사업이 시작된 뒤 피해 주민들의 임시 거처 요청이 들어왔습니다. 어떤 대응을 선택하시겠습니까?",
+   options:[
+    ["임시 숙소 지원",[5,-10,2,0],"임시 숙소를 확보하고 피해 주민들에게 안내했습니다."],
+    ["현장 생활지원 인력 파견",[3,-7,2,0],"현장 지원 인력을 배치하고 주민들에게 필요한 서비스를 연계했습니다."]
+   ]
+  }
+};
+function openLetter(){if(game.phase!=="play"||eventAt()?.id!=="secret")return;game.letterOpened=true;persist();render(); }
+function followup(){
+ const data=FOLLOWUP[game.followup];
+ if(!data)return '<section class="card"><h2>후속 사건이 없습니다.</h2>'+btn("계속하기","continueFollowup")+'</section>';
+ return '<section class="card dark"><span class="tag">FOLLOW-UP · 이전 결정의 결과</span><h2>📬 새로운 긴급 보고</h2><p>앞서 발생한 집중호우에 대한 후속 상황입니다.</p></section>'+
+ statsHTML()+'<section class="card event-card"><span class="tag">추가 사건 · 국정 대응</span>'+
+ art(game.followup==="supply"?"repair":"supply","scene-art")+
+ '<h2>'+data.title+'</h2><p>'+data.desc+'</p><div class="notice">이 사건은 앞서 집중호우에서 내린 선택에 따라 발생했습니다.</div>'+
+ data.options.map((o,i)=>btn('<strong>'+(i+1)+'. '+o[0]+'</strong><small>게임 지표 변화</small>'+effectHTML(o[1]),"followupChoice",'data-index="'+i+'"',"choice")).join("")+'</section>';
+}
+function chooseFollowup(i){
+ if(game.phase!=="followup")return;
+ const f=FOLLOWUP[game.followup],c=f?.options[i];if(!c)return;
+ apply(c[1]);
+ game.latest={term:game.term,turn:game.turn+1,category:"후속 사건",title:f.title,choice:c[0],story:c[2],reaction:game.followup==="supply"?
+ "복구 현장 주민: 물품도 받았으니 이제 다리가 안전해지길 기다리고 있어요.\n복구 작업자: 현장의 진행 상황을 계속 알려드릴게요.":
+ "임시 숙소 이용자: 지금 머물 곳을 안내받아 다행이에요.\n지역 자원봉사자: 이동이 어려운 이웃도 함께 살펴봐 주세요.",delta:c[1],scene:game.followup==="supply"?"repair":"supply",isFollowup:true};
+ game.history.push(game.latest);game.news.unshift(game.latest);
+ game.followup=null;go("news");
+}
+
 function safe(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 function clamp(n,lo,hi){return Math.max(lo,Math.min(hi,n));}
 function shuffle(items){let a=items.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -150,7 +211,7 @@ function start(){
  let name=document.getElementById("president-name").value.trim().slice(0,20);
  if(!name){alert("대통령 이름을 입력해 주세요.");return;}
  if(load()&&!confirm("기존 저장 기록을 지우고 새 게임을 시작할까요?"))return;
- game={version:2,phase:"appoint",name,term:1,turn:0,appointIndex:0,stats:{approval:50,budget:100,economy:50,relations:50},cabinet:{},deck:[],history:[],news:[],latest:null,elected:false,previousPhase:"game"};
+ game={version:2,phase:"appoint",name,term:1,turn:0,appointIndex:0,letterOpened:false,followup:null,stats:{approval:50,budget:100,economy:50,relations:50},cabinet:{},deck:[],history:[],news:[],latest:null,elected:false,previousPhase:"game"};
  persist();render();
 }
 function appoint(i){
@@ -232,14 +293,18 @@ function citizenReaction(event,choiceIndex){
 function choose(i){
  if(game.phase!=="play")return;
  let e=eventAt();if(!e||!e.options[i])return;
+ if(e.id==="secret"&&!game.letterOpened)return;
  let c=e.options[i],d=impacts(c,e);apply(d);
  let reaction=citizenReaction(e,i);
- let item={term:game.term,turn:game.turn+1,category:e.cat,title:e.title,choice:c[0],story:c[2],reaction,delta:d};
+ let item={term:game.term,turn:game.turn+1,category:e.cat,title:e.title,choice:c[0],story:c[2],reaction,delta:d,
+  scene:e.id==="disaster"?(i===0?"supply":"repair"):e.id==="secret"?"letter":"newspaper"};
+ if(e.id==="disaster")game.followup=i===0?"supply":"repair";
  game.latest=item;game.news.unshift(item);game.history.push(item);go("news");
 }
 function next(){
  if(game.phase!=="news")return;
- game.turn++;
+ if(!game.latest?.isFollowup)game.turn++;
+ if(game.followup){go("followup");return;}
  if(game.turn>=ROUNDS)go(game.term===1?"election":"end");
  else go("play");
 }
@@ -253,7 +318,7 @@ function election(i){
 }
 function secondTerm(){
  if(game.phase!=="electionResult"||!game.elected)return;
- game.term=2;game.turn=0;game.appointIndex=0;game.cabinet={};game.deck=[];game.latest=null;go("appoint");
+ game.term=2;game.turn=0;game.letterOpened=false;game.followup=null;game.appointIndex=0;game.cabinet={};game.deck=[];game.latest=null;go("appoint");
 }
 function reset(){if(!confirm("저장된 게임 기록을 삭제하고 처음부터 시작할까요?"))return;try{localStorage.removeItem(KEY);}catch(e){}game=null;render();}
 function intro(){
@@ -261,11 +326,12 @@ function intro(){
  return '<section class="card hero"><span class="tag">WELCOME TO BAGANEUM REPUBLIC</span>'+
  '<p class="stage-kicker">★ 오늘부터, 내가 대통령</p><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
  '<p>당신의 결정으로 움직이는 작은 공화국. 내각을 꾸리고, 국가 위기에 대응하고, 재선에 도전하세요.</p>'+
+ art("desk","hero-art")+
  '<div class="flag-stage"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
  (saved?'<div class="notice">💾 저장된 게임: '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume")+'<div class="rule"></div>':"")+
  '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="이름을 입력하세요" autocomplete="off">'+
  btn("🏛️ 취임 선서하고 시작하기 →","start")+'</section>'+
- '<section class="card"><span class="tag">HOW TO PLAY</span><h3>당신의 첫 번째 국정 과제</h3><p>👔 나만의 내각 구성<br>📋 매 임기 8개의 국정 결정<br>📡 결정 직후 속보와 시민 반응<br>🗳️ 첫 임기 종료 후 재선 도전</p></section>';
+ '<section class="card"><span class="tag">HOW TO PLAY</span><h3>대통령의 첫 번째 국정 과제</h3><p>👔 나만의 내각 구성<br>📋 매 임기 8개의 국정 결정<br>📡 선택에 따라 달라지는 뉴스와 시민 반응<br>⚠️ 이전 결정에서 이어지는 후속 사건<br>🗳️ 첫 임기 종료 후 재선 도전</p></section>';
 }
 function appointment(){
  let role=ROLES[game.appointIndex];
@@ -283,27 +349,43 @@ function advice(e){
 function play(){
  let e=eventAt();
  if(!e)return '<section class="card"><h2>이벤트를 불러올 수 없습니다.</h2>'+btn("처음으로","reset")+'</section>';
+ const secret=e.id==="secret",closed=secret&&!game.letterOpened;
  return '<section class="card dark"><div class="round-head"><div class="round-progress"><span class="tag">'+game.term+'기 · 국정 운영 중</span><b>TURN '+(game.turn+1)+' / '+ROUNDS+'</b></div>'+
  '<div class="progress-dots">'+Array.from({length:ROUNDS},(_,i)=>'<i class="'+(i<game.turn?"done":i===game.turn?"now":"")+'"></i>').join("")+'</div></div>'+
- '<div class="flag-head"><div><p class="stage-kicker light">대통령 집무실</p><h2>'+safe(game.name)+' 대통령</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>바가늠공화국의 새로운 소식이 도착했습니다.</p></section>'+
+ '<div class="flag-head"><div><p class="stage-kicker light">대통령 집무실</p><h2>'+safe(game.name)+' 대통령</h2></div>'+
+ art("desk","desk-art")+'</div><p>바가늠공화국의 새로운 소식이 도착했습니다.</p></section>'+
  statsHTML()+
- '<section class="card event-card '+(e.id==="secret"?"secret":"")+'"><div class="event-head"><span class="tag">'+e.cat+' · NATIONAL ISSUE</span>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
- '<h2>'+e.title+'</h2><p>'+e.desc+'</p>'+
- (e.id==="secret"?'<div class="letter"><div class="flag-head"><strong>💌 대통령 전용 서신</strong>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
+ '<section class="card event-card '+(secret?"secret":"")+'"><div class="event-head"><span class="tag">'+(closed?"대통령 전용 서신":e.cat+' · NATIONAL ISSUE')+'</span>'+
+ '<img class="flag-small" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"></div>'+
+ (secret?art("letter","letter-art"):"")+
+ '<h2>'+(closed?"💌 대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2>'+
+ (closed?'<p>대통령님만 열어볼 수 있는 특별한 봉투입니다.</p>'+btn("💌 편지 열어보기","openLetter"):
+ '<p>'+e.desc+'</p>'+
+ (secret?'<div class="letter"><strong>대통령 전용 서신</strong><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
  '<div class="rule"></div><h3>어떤 결정을 내리시겠습니까?</h3>'+
- e.options.map((o,i)=>btn('<strong>0'+(i+1)+' · '+o[0]+'</strong><small>선택 시 바뀌는 게임 지표</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join("")+
- '</section>'+advice(e)+
+ e.options.map((o,i)=>btn('<strong>0'+(i+1)+' · '+o[0]+'</strong><small>선택 시 바뀌는 게임 지표</small>'+effectHTML(impacts(o,e)),"choose",'data-index="'+i+'"',"choice")).join(""))+
+ '</section>'+(closed?"":advice(e))+
  '<section class="card"><span class="tag">MY CABINET</span><h3>👔 임명된 내각</h3>'+ROLES.map(r=>'<p><b>'+r.title+'</b> · '+person(r.id).name+' ('+person(r.id).style+')</p>').join("")+'</section>'+
  '<section class="card"><h3>📜 국정 기록</h3>'+btn("지난 정책과 뉴스 확인","history","","secondary")+'</section>';
 }
 function news(){
  let n=game.latest;
- return '<section class="card dark"><span class="tag">PRESIDENTIAL BRIEFING</span><div class="flag-head"><div><h2>📡 국정 브리핑</h2><p>'+safe(game.name)+' 대통령 · '+game.term+'기</p></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div></section>'+statsHTML()+
- '<section class="card"><div class="news-masthead"><div><strong>바가늠일보</strong><p class="small muted">BAGANEUM DAILY · 가상 뉴스</p></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
- '<div class="ticker">● BREAKING NEWS · 속보</div><div class="news"><span class="tag">'+n.category+'</span><h3>'+n.title+'… 정부, '+n.choice+' 발표</h3><p>'+n.story+'</p></div>'+
- '<div class="report-pull"><b>👥 가상 시민들의 한마디</b>'+safe(n.reaction).split("\n").map(voice=>'<p class="citizen-voice">💬 '+voice+'</p>').join("")+'</div><div class="rule"></div><h3>📊 이번 결정의 게임 지표 변화</h3>'+effectHTML(n.delta)+
+ const event=EVENTS.find(e=>e.title===n.title),choiceIndex=event?event.options.findIndex(c=>c[0]===n.choice):0;
+ const lines=String(n.reaction||"").split("\n").filter(Boolean);
+ return '<section class="card dark"><span class="tag">PRESIDENTIAL BRIEFING</span><div class="flag-head"><div><h2>📡 국정 브리핑</h2><p>'+safe(game.name)+' 대통령 · '+game.term+'기</p></div>'+
+ '<img class="flag-small" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"></div></section>'+
+ statsHTML()+
+ '<section class="card"><div class="news-masthead"><div><strong>바가늠일보</strong><p class="small muted">BAGANEUM DAILY · 가상 뉴스</p></div>'+
+ art("newspaper","paper-art")+'</div>'+
+ '<div class="ticker">● BREAKING NEWS · 속보</div><div class="news"><span class="tag">'+safe(n.category)+'</span>'+
+ (n.scene&&n.scene!=="newspaper"?art(n.scene,"scene-art"):"")+
+ '<h3>'+safe(n.title)+'… 정부, '+safe(n.choice)+' 발표</h3><p>'+safe(n.story)+'</p></div>'+
+ '<div class="report-pull"><b>👥 가상 시민들의 한마디</b>'+
+ lines.map((voice,i)=>'<div class="citizen-row">'+art(citizenArt(event?.id||"disaster",choiceIndex,i),"citizen-art")+
+ '<p class="citizen-voice">💬 '+safe(voice)+'</p></div>').join("")+
+ '</div><div class="rule"></div><h3>📊 이번 결정의 게임 지표 변화</h3>'+effectHTML(n.delta)+
  '<div class="notice">이 뉴스와 시민 반응, 정책 효과는 모두 게임을 위한 가상 설정입니다.</div>'+
- btn(game.turn+1===ROUNDS?"임기 종료 및 결과 확인 →":"다음 국정 현안 →","next")+
+ btn(n.isFollowup?"다음 국정 현안 →":game.turn+1===ROUNDS?"임기 종료 및 결과 확인 →":"다음 국정 현안 →","next")+
  btn("전체 뉴스 보기","history","","secondary")+'</section>';
 }
 function electionPage(){
@@ -315,14 +397,14 @@ function electionPage(){
 }
 function electionResult(){
  return '<section class="card result-stage"><span class="tag">OFFICIAL ELECTION RESULT</span>'+
- '<div class="flag-stage"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
+ art(game.elected?"win":"lose","ending-art")+
  '<h2>'+(game.elected?"🎉 재선 성공!":"🏛️ 대통령 임기 종료")+'</h2>'+
  '<p>'+(game.elected?"바가늠공화국의 두 번째 임기를 시작할 수 있습니다.":"바가늠공화국의 가상 선거에서 재선에 실패했습니다.")+'</p><div class="notice">가상의 게임 규칙에 따른 선거 결과입니다.</div></section>'+
  statsHTML()+'<section class="card">'+(game.elected?btn("제2기 대통령 취임하기 →","second"):btn("퇴임 및 최종 기록 확인 →","finish"))+'</section>';
 }
 function ending(){
  return '<section class="card result-stage"><span class="tag">PRESIDENTIAL FAREWELL</span>'+
- '<div class="flag-stage"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
+ art(game.elected&&game.term===2?"win":"desk","ending-art")+
  '<h2>대통령 퇴임식 🎉</h2><p>'+safe(game.name)+' 대통령님의 바가늠공화국 국정 운영이 종료되었습니다.</p>'+
  '<div class="notice">최종 임기: '+game.term+'기 · 국정 현안 '+game.history.filter(h=>h.category!=="선거").length+'건 처리</div></section>'+
  statsHTML()+'<section class="card"><h3>📜 국정 운영 결과</h3>'+btn("전체 정책과 뉴스 기록 보기","history")+btn("새 게임 시작하기","reset","","secondary")+'</section>';
@@ -334,7 +416,7 @@ function historyPage(){
 }
 function render(){
  let page=!game?intro():({
-  appoint:appointment,play:play,news:news,election:electionPage,
+  appoint:appointment,play:play,news:news,followup:followup,election:electionPage,
   electionResult:electionResult,end:ending,history:historyPage
  }[game.phase]||intro)();
  app.innerHTML=page;
@@ -346,6 +428,8 @@ document.addEventListener("click",function(e){
  else if(action==="resume"){let saved=load();if(saved){game=saved;render();}}
  else if(action==="appoint")appoint(i);
  else if(action==="choose")choose(i);
+ else if(action==="openLetter")openLetter();
+ else if(action==="followupChoice")chooseFollowup(i);
  else if(action==="next")next();
  else if(action==="election")election(i);
  else if(action==="second")secondTerm();
