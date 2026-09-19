@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f8f5ed">
   <meta name="description" content="가상의 바가늠공화국 대통령이 되어 국정을 운영하는 모바일 웹 시뮬레이션 게임">
   <title>바가늠공화국 | 대통령 시뮬레이터</title>
-  <link rel="icon" type="image/png" href="assets/baganeum-flag.png">
+  <link rel="icon" type="image/png" href="assets/baganeum-flag.png?v=20260919-2">
   <style>
     :root{font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif;color-scheme:dark;--bg:#101c33;--card:#fff;--text:#17243b;--muted:#64748b;--blue:#345fd1}
     *{box-sizing:border-box}
@@ -42,7 +42,7 @@
 </head>
 <body>
 <main>
-<header class="top"><div class="brand"><img class="brand-photo" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"><div><h1>바가늠공화국</h1><p>PRESIDENT SIMULATOR</p></div></div><span class="header-seal" aria-label="바가늠공화국 공식 게임">OFFICIAL ★</span></header>
+<header class="top"><div class="brand"><img class="brand-photo" src="assets/baganeum-flag.png?v=20260919-2" alt="바가늠공화국 국기"><div><h1>바가늠공화국</h1><p>PRESIDENT SIMULATOR</p></div></div><span class="header-seal" aria-label="바가늠공화국 공식 게임">OFFICIAL ★</span></header>
   <div id="app" aria-live="polite"></div>
   <footer>모든 국가·인물·뉴스·정책 효과·선거 결과는 가상의 게임 설정입니다.<br>진행 정보는 현재 기기의 브라우저에 저장됩니다.</footer>
 </main>
@@ -344,7 +344,7 @@ function intro(){
  '<p class="stage-kicker">★ 오늘부터, 내가 대통령</p><h2>바가늠공화국의<br><em>대통령이 되어봐!</em></h2>'+
  '<p>당신의 결정으로 움직이는 작은 공화국. 내각을 꾸리고, 국가 위기에 대응하고, 재선에 도전하세요.</p>'+
  art("desk","hero-art")+
- '<div class="flag-stage intro-flag"><img src="assets/baganeum-flag.png" alt="직접 그린 바가늠공화국 국기"></div>'+
+ '<div class="flag-stage intro-flag"><img src="assets/baganeum-flag.png?v=20260919-2" alt="직접 그린 바가늠공화국 국기"></div>'+
  (saved?'<div class="notice">💾 저장된 게임: '+safe(saved.name)+' 대통령 · '+saved.term+'기</div>'+btn("저장된 게임 이어하기 →","resume")+'<div class="rule"></div>':"")+
  '<label for="president-name">대통령 이름</label><input id="president-name" maxlength="20" placeholder="이름을 입력하세요" autocomplete="off">'+
  btn("🏛️ 취임 선서하고 시작하기 →","start")+'</section>'+
@@ -353,7 +353,7 @@ function intro(){
 function appointment(){
  let role=ROLES[game.appointIndex];
  return '<section class="card dark"><span class="tag">CABINET · '+game.term+'기 '+(game.appointIndex+1)+' / 3</span>'+
- '<div class="flag-head"><div><p class="stage-kicker light">대통령의 첫 번째 임무</p><h2>'+role.title+' 임명</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
+ '<div class="flag-head"><div><p class="stage-kicker light">대통령의 첫 번째 임무</p><h2>'+role.title+' 임명</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png?v=20260919-2\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div>'+
  '<p>'+safe(game.name)+' 대통령님, 함께 국정을 운영할 인물을 선택하세요. 임명한 사람에 따라 정책의 게임 지표가 달라집니다.</p></section>'+
  role.people.map((p,i)=>'<section class="card"><span class="tag">CANDIDATE 0'+(i+1)+'</span><h2>'+p.name+'</h2><p><b>'+p.style+'</b></p><div class="notice">'+p.detail+'</div>'+btn(p.name+" 임명하기 →","appoint",'data-index="'+i+'"')+'</section>').join("");
 }
@@ -373,10 +373,10 @@ function play(){
  art("desk","desk-art")+'</div><p>바가늠공화국의 새로운 소식이 도착했습니다.</p></section>'+
  statsHTML()+
  '<section class="card event-card '+(secret?"secret":"")+'"><div class="event-head"><span class="tag">'+(closed?"대통령 전용 서신":e.cat+' · NATIONAL ISSUE')+'</span>'+
- '<img class="flag-small" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"></div>'+
+ '<img class="flag-small" src="assets/baganeum-flag.png?v=20260919-2" alt="바가늠공화국 국기"></div>'+
  (secret?(closed?'<button type="button" class="letter-tap" data-action="openLetter" aria-label="편지 그림을 눌러 편지 열기">'+art("letter","letter-art")+'<span>봉투를 눌러 열어보세요 ↗</span></button>':art("letter","letter-art")):"")+
  '<h2>'+(closed?"💌 대통령님 앞으로 편지가 도착했습니다":e.title)+'</h2>'+
- (closed?'<p>대통령님만 열어볼 수 있는 특별한 봉투입니다.</p>'+btn("💌 편지 열어보기","openLetter"):
+ (closed?'<p>대통령님만 열어볼 수 있는 특별한 봉투입니다.</p>':
  '<p>'+e.desc+'</p>'+
  (secret?'<div class="letter"><strong>대통령 전용 서신</strong><p>'+safe(game.name)+' 대통령님, 뿡뿡 뿌와앙 히히 ❤️</p></div>':"")+
  '<div class="rule"></div><h3>어떤 결정을 내리시겠습니까?</h3>'+
@@ -390,7 +390,7 @@ function news(){
  const event=EVENTS.find(e=>e.title===n.title),choiceIndex=event?event.options.findIndex(c=>c[0]===n.choice):0;
  const lines=String(n.reaction||"").split("\n").filter(Boolean);
  return '<section class="card dark"><span class="tag">PRESIDENTIAL BRIEFING</span><div class="flag-head"><div><h2>📡 국정 브리핑</h2><p>'+safe(game.name)+' 대통령 · '+game.term+'기</p></div>'+
- '<img class="flag-small" src="assets/baganeum-flag.png" alt="바가늠공화국 국기"></div></section>'+
+ '<img class="flag-small" src="assets/baganeum-flag.png?v=20260919-2" alt="바가늠공화국 국기"></div></section>'+
  statsHTML()+
  '<section class="card"><div class="news-masthead"><div><strong>바가늠일보</strong><p class="small muted">BAGANEUM DAILY · 가상 뉴스</p></div>'+
  art("newspaper","paper-art")+'</div>'+
@@ -406,7 +406,7 @@ function news(){
  btn("전체 뉴스 보기","history","","secondary")+'</section>';
 }
 function electionPage(){
- return '<section class="card dark"><div class="flag-head"><div><span class="tag">ELECTION DAY</span><h2>🗳️ 제1기 임기 종료</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님의 첫 번째 임기가 끝났습니다. 재선에 도전할 수 있습니다.</p></section>'+statsHTML()+
+ return '<section class="card dark"><div class="flag-head"><div><span class="tag">ELECTION DAY</span><h2>🗳️ 제1기 임기 종료</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png?v=20260919-2\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님의 첫 번째 임기가 끝났습니다. 재선에 도전할 수 있습니다.</p></section>'+statsHTML()+
  '<section class="card"><h2>재선 선거 활동</h2><p>선거 활동을 하나 선택하세요. 가상의 선거 규칙에 따라 결과가 결정됩니다.</p>'+
  '<div class="notice">게임 전용 조건: 국민 지지도 58 이상 · 경제 지수 45 이상 · 국가 재정 15 이상 · 국제관계 35 이상<br>실제 선거 결과를 예측하는 규칙이 아닙니다.</div>'+
  CAMPAIGNS.map((c,i)=>btn('<strong>'+c.name+'</strong><small>'+c.desc+'</small>'+effectHTML(c.delta),"election",'data-index="'+i+'"',"choice")).join("")+
@@ -427,7 +427,7 @@ function ending(){
  statsHTML()+badgesHTML()+'<section class="card"><h3>📜 국정 운영 결과</h3>'+btn("전체 정책과 뉴스 기록 보기","history")+btn("새 게임 시작하기","reset","","secondary")+'</section>';
 }
 function historyPage(){
- return '<section class="card archive-card"><div class="flag-head"><div><span class="tag">PRESIDENTIAL ARCHIVE</span><h2>📜 국정 운영 기록</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님의 모든 정책과 뉴스 기록입니다.</p>'+
+ return '<section class="card archive-card"><div class="flag-head"><div><span class="tag">PRESIDENTIAL ARCHIVE</span><h2>📜 국정 운영 기록</h2></div>'+"<img class=\"flag-small\" src=\"assets/baganeum-flag.png?v=20260919-2\" alt=\"직접 그린 바가늠공화국 국기\">"+'</div><p>'+safe(game.name)+' 대통령님의 모든 정책과 뉴스 기록입니다.</p>'+
  (game.history.length?game.history.map(h=>'<div class="rule"></div><p><b>'+h.term+'기 · '+h.turn+'번째 · '+h.title+'</b><br>선택: '+h.choice+'</p><p class="muted small">'+h.story+'</p>'+effectHTML(h.delta)).join(""):"<p>아직 국정 기록이 없습니다.</p>")+
  btn("이전 화면으로 돌아가기","back")+'</section>';
 }
