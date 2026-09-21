@@ -159,15 +159,52 @@ function bankView(){
  B("5분 낮잠 · 체력 +14 / 민심 -3","help",'data-kind="energy"',G.usedHelp.includes(G.term+":"+G.turn+":energy")?"secondary used":"secondary")+'</div>'+
  '<p class="smallprint">이 게임은 기기 브라우저에 자동 저장됩니다.</p>'+B("새 게임 시작하기","reset","","text-button")+'</section>';
 }
+
+/* Animate only genuine scene changes; small updates such as citizen replies stay still. */
+let lastSceneKey="",activeSceneTransition=null;
+function sceneMotion(){
+ if(tab!=="home")return "tab";
+ if(!G)return "default";
+ if(G.phase==="report"&&G.current==="letter")return "letter";
+ if(G.phase==="report")return "report";
+ if(G.phase==="decision")return "decision";
+ if(G.phase==="news")return "news";
+ if(G.phase==="processing")return "processing";
+ if(G.phase==="election"||G.phase==="election-result"||G.phase==="end")return "result";
+ if(G.phase==="mini")return "mini";
+ return "default";
+}
+function sceneIdentity(){
+ if(!G)return "landing";
+ return [tab,G.term,G.turn,G.current||"",G.phase,
+         G.phase==="report"&&G.current==="letter"&&G.openedLetter?"opened":"closed"].join(":");
+}
+function motionAllowed(){
+ return typeof document.startViewTransition==="function" &&
+ (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
 function render(){
- if(!G){APP.innerHTML=landing();return;}
+ if(!G){lastSceneKey="";APP.innerHTML=landing();return;}
  if(G.phase==="processing"&&G.processingUntil<=Date.now()){G.phase="news";G.processingUntil=0;save();}
  const view=tab==="team"?teamView():tab==="paper"?archiveView():tab==="bank"?bankView():
  G.phase==="alarm"?alarmView():G.phase==="hire"?hireView():G.phase==="mini"?miniView():
  G.phase==="processing"?processingView():G.phase==="news"?newsView():G.phase==="election"?electionView():
  G.phase==="election-result"?resultView():G.phase==="end"?endingView():
  G.phase==="report"?reportView():G.phase==="decision"?decisionView():deskView();
- APP.innerHTML='<div class="v5-game">'+logo()+(tab==="home"?summary():"")+'<div class="scroll-pane" id="scrollPane">'+view+'</div>'+nav()+'</div>';
+ const enhanced=motionAllowed(),key=sceneIdentity(),previous=lastSceneKey;
+ const markup='<div class="v5-game'+(enhanced?" motion-enhanced":"")+'">'+logo()+(tab==="home"?summary():"")+
+ '<div class="scroll-pane" id="scrollPane" data-motion="'+sceneMotion()+'">'+view+'</div>'+nav()+'</div>';
+ const draw=()=>{APP.innerHTML=markup;};
+ const changeScene=enhanced&&previous!==""&&previous!==key&&
+                 typeof APP.querySelector==="function"&&!!APP.querySelector(".scroll-pane");
+ lastSceneKey=key;
+ if(changeScene){
+  if(activeSceneTransition&&typeof activeSceneTransition.skipTransition==="function")
+   activeSceneTransition.skipTransition();
+  if(document.documentElement)document.documentElement.dataset.gameMotion=sceneMotion();
+  try{activeSceneTransition=document.startViewTransition(draw);}
+  catch(error){draw();}
+ }else draw();
 }
 document.addEventListener("click",function(ev){
  const x=ev.target.closest("button[data-action]");if(!x||x.disabled)return;

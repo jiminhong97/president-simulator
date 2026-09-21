@@ -154,3 +154,84 @@ p{font-size:14px;line-height:1.58}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+
+/* 5.0 motion polish: reserve the desktop scrollbar slot so scene widths never jump. */
+@media (hover:hover) and (pointer:fine){
+ .scroll-pane,.v5-start{scrollbar-gutter:stable;}
+}
+.scroll-pane{overflow-x:hidden;}
+
+/* When View Transitions are supported, animate the *scene* rather than shaking
+   or re-entering the entire header, counters, buttons and navigation. */
+.v5-game.motion-enhanced :is(.scene-card,.decision-card,.news-card,.sub-view){animation:none;}
+::view-transition-old(root),::view-transition-new(root){animation:none;}
+::view-transition-old(game-scene){animation:scene-fade-out .24s ease-in both;}
+::view-transition-new(game-scene){animation:scene-fade-in .62s ease-out both;}
+html[data-game-motion="report"]::view-transition-new(game-scene){
+ animation:report-paper-in .76s cubic-bezier(.17,.77,.28,1) both;
+}
+html[data-game-motion="decision"]::view-transition-new(game-scene){
+ animation:decision-reveal .66s cubic-bezier(.2,.75,.2,1) both;
+}
+html[data-game-motion="news"]::view-transition-new(game-scene){
+ animation:news-drop-in .92s cubic-bezier(.2,.68,.25,1) both;
+}
+html[data-game-motion="letter"]::view-transition-new(game-scene){
+ animation:scene-fade-in .72s ease-out both;
+}
+html[data-game-motion="mini"]::view-transition-new(game-scene),
+html[data-game-motion="result"]::view-transition-new(game-scene){
+ animation:decision-reveal .78s cubic-bezier(.2,.72,.2,1) both;
+}
+html[data-game-motion="tab"]::view-transition-new(game-scene){
+ animation:scene-fade-in .5s ease-out both;
+}
+.scroll-pane{view-transition-name:game-scene;}
+
+/* The user's original envelope flies in on the report screen; after it is opened,
+   the written note softly unfolds. Transforms do not affect scrollbar width. */
+.letter-click{animation:letter-fly-in 1.12s cubic-bezier(.18,.7,.23,1) both;}
+.letter-message{animation:letter-unfold .85s cubic-bezier(.18,.8,.26,1) both;transform-origin:center top;}
+
+/* Browsers without View Transitions still get a gentle entrance, without the
+   old repetitive right-to-left news slide. */
+.news-card{animation:news-drop-in .9s cubic-bezier(.2,.68,.25,1) both;}
+@keyframes paper-in{
+ from{opacity:0;transform:translateY(12px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes scene-fade-out{
+ from{opacity:1;}to{opacity:0;}
+}
+@keyframes scene-fade-in{
+ from{opacity:0;transform:translateY(9px)}
+ to{opacity:1;transform:translateY(0)}
+}
+@keyframes report-paper-in{
+ from{opacity:0;transform:translateY(24px) scale(.985)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes decision-reveal{
+ from{opacity:0;transform:scale(.96)}
+ to{opacity:1;transform:scale(1)}
+}
+@keyframes news-drop-in{
+ from{opacity:0;transform:translateY(-27px) scale(.985)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes letter-fly-in{
+ 0%{opacity:0;transform:translate(64px,-100px) rotate(17deg) scale(.7)}
+ 72%{opacity:1;transform:translate(-5px,5px) rotate(-7deg) scale(1.025)}
+ 100%{opacity:1;transform:translate(0,0) rotate(-4deg) scale(1)}
+}
+@keyframes letter-unfold{
+ from{opacity:0;transform:rotate(-1deg) scaleY(.65) translateY(-8px)}
+ to{opacity:1;transform:rotate(-1deg) scaleY(1) translateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+ .scroll-pane{view-transition-name:none;}
+ ::view-transition-old(root),::view-transition-new(root),
+ ::view-transition-old(game-scene),::view-transition-new(game-scene){animation:none!important;}
+ .letter-click,.letter-message,.news-card{animation:none!important;}
+}
