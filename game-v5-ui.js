@@ -13,8 +13,13 @@ function nav(){
  return '<nav class="bottom-bar" aria-label="게임 메뉴">'+tabs.map(([k,emoji,label])=>
  '<button type="button" data-action="tab" data-tab="'+k+'" aria-current="'+(tab===k?"page":"false")+'" class="'+(tab===k?"active":"")+'"><span>'+emoji+'</span><small>'+label+'</small></button>').join("")+'</nav>';
 }
+function sceneArt(art){
+ const original={"election-win":"election-win.png","election-lose":"election-lose.png","result-repair":"result-repair.png"};
+ if(original[art])return '<img class="pic" src="assets/'+original[art]+'" width="493" height="459" alt="'+h(art)+' 손그림" decoding="async" draggable="false">';
+ return PIC(art);
+}
 function card(tag,title,art,content,foot=""){
- return '<section class="scene-card"><span class="pencil-label">'+h(tag)+'</span>'+PIC(art)+
+ return '<section class="scene-card"><span class="pencil-label">'+h(tag)+'</span>'+sceneArt(art)+
  '<h1>'+title+'</h1>'+content+(foot?'<div class="scene-footer">'+foot+'</div>':"")+'</section>';
 }
 function landing(){
@@ -44,7 +49,7 @@ function reportView(){
  const e=event();if(!e)return deskView();
  if(e.id==="letter"&&!G.openedLetter){
  return card("비밀 편지 도착","대통령님 앞으로<br>편지가 왔습니다.","phone",
- PAR(["봉투 그림을 직접 눌러 보세요.","편지 아래에 중복 열기 버튼은 없습니다."])+
+ PAR(["봉투 그림을 직접 눌러 보세요."])+
  '<button type="button" class="letter-click" data-action="letter" aria-label="봉투를 눌러 편지를 엽니다"><img src="assets/secret-letter.png" width="493" height="459" alt="손그림 비밀 편지"></button>');
  }
  return card(e.cat,e.title,e.art,PAR(e.desc)+(e.id==="letter"?
@@ -60,20 +65,27 @@ function decisionView(){
  B("↩ 보고서 다시 보기","scene",'data-scene="report"',"text-button")+'</section>';
 }
 function processingView(){
- return card("결재 중...","대통령이 열심히<br>일하는 척합니다.","meeting",
+ return card("쉿! 복구중!","대통령이 열심히<br>일하는 척합니다.","result-repair",
  '<div class="giant-stamp" aria-label="결재 완료">결재<br>완료!</div>'+
  PAR(["비서실장: 이거 진짜 시행하실 거예요?","대통령: 이미 도장을 찍었습니다."])+
  '<p class="smallprint">잠시 뒤 뉴스가 등장합니다.<br>직접 터치해서 넘어갈 수도 있습니다.</p>',
  B("신문 먼저 보기 →","skip","","secondary"));
 }
+function voicePicture(news, voiceIndex){
+ const moods={"first":["WA","HW","WW"],"chicken":["WW","HW","HW"],"wallet":["WW","WH","WW"],"tomato":["WW","WH","WH"],"summit":["WW","HW","WW"],"duck":["WA","WW","HW"],"flag":["HW","HH","WW"],"fan":["HW","AW","WA"],"moon":["HH","WW","WW"],"press":["AH","WH","WH"],"cake":["WH","WW","WA"],"cat":["HH","AH","WH"],"banana":["HW","WW","WW"],"coins":["AW","WH","WA"],"paper":["HA","HW","WH"],"rainbow":["HH","HW","WA"],"letter":["HH","WW"],"nap":["WW","HA","HW"],"blanket":["WA","HW","HW"],"double":["WW","WW","AW"],"owner":["AA","WH"],"chicken-meet":["WW","HH","AW"]};
+ const source=[...V5_EVENTS,...Object.values(V5_FOLLOW)].find(e=>e.title===news.source);
+ const choiceIndex=source?.choices.findIndex(o=>o.label===news.choice)??-1;
+ const mood=choiceIndex>=0?moods[source.id]?.[choiceIndex]?.charAt(voiceIndex):"";
+ const image=mood==="H"?"citizen-happy.png":mood==="A"?"citizen-angry.png":"citizen-worried.png";
+ return "assets/"+image;
+}
 function newsView(){
  const n=G.latest;if(!n)return deskView();
- const idx=(G.history.length+G.stats.chaos)%3;
  return '<section class="news-card"><div class="flash">● 바가늠일보 · 긴급 속보</div>'+
  PIC(n.art,"news-art")+'<h1>'+h(n.title)+'</h1>'+PAR([n.body])+
  '<div class="outcome"><b>📌 방금 달라진 것</b><div class="change-list">'+changes(n.delta)+'</div></div>'+
  '<div class="voices"><strong>👥 시민들의 한마디</strong>'+
- (moreVoices?n.voices:n.voices.slice(0,1)).map((q,i)=>'<div class="voice"><img src="assets/'+["citizen-happy.png","citizen-worried.png","citizen-angry.png"][(idx+i)%3]+'" width="493" height="459" alt="손그림 시민 표정"><p>'+h(q)+'</p></div>').join("")+
+ (moreVoices?n.voices:n.voices.slice(0,1)).map((q,i)=>'<div class="voice"><img src="'+voicePicture(n,i)+'" width="493" height="459" alt="시민 반응에 맞는 손그림 표정"><p>'+h(q)+'</p></div>').join("")+
  (n.voices.length>1?B(moreVoices?"첫 반응만 보기":"다른 시민 반응 보기 +","voices","","text-button"):"")+'</div>'+
  B(G.turn>=V5_ROUNDS&&!G.queue.length&&G.term===1?"첫 임기 결과 확인 →":"다음 사건으로 →","next","","primary")+'</section>';
 }
@@ -116,7 +128,7 @@ function electionView(){
  B("재선 없이 퇴임하기","retire","","text-button"));
 }
 function resultView(){
- return card("가상 선거 결과",G.elected?"재선 성공!<br>아직 퇴근 못 합니다.":"재선 실패!<br>이제 퇴근하세요.",G.elected?"medal":"sleep",
+ return card("가상 선거 결과",G.elected?"재선 성공!<br>아직 퇴근 못 합니다.":"재선 실패!<br>이제 퇴근하세요.",G.elected?"election-win":"election-lose",
  PAR(G.elected?["국민들이 또 한 번 기회를 줬습니다.","이번에도 나라가 조용할 것 같지는 않습니다."]:
  ["가상 선거에서 이번 임기가 끝났습니다.","집무실 침대는 이제 자유입니다."]),
  B(G.elected?"제2기 취임하기 →":"퇴임식으로 →",G.elected?"second":"retire","","primary"));
