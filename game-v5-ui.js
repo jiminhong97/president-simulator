@@ -48,7 +48,7 @@ function reportView(){
  '<button type="button" class="letter-click" data-action="letter" aria-label="봉투를 눌러 편지를 엽니다"><img src="assets/secret-letter.png" width="493" height="459" alt="손그림 비밀 편지"></button>');
  }
  return card(e.cat,e.title,e.art,PAR(e.desc)+(e.id==="letter"?
- '<div class="letter-message">'+h(G.name)+' 대통령님!<br>뿡뿡 뿌와앙 히히 ❤️</div>':""),
+ '<div class="letter-message">'+h(G.name)+' 대통령님!<br>뿡뿡 뿌와앙 엉더니 말랑말랑 히히 ❤️</div>':""),
  B("대통령의 결정 내리기 →","scene",'data-scene="decision"',"primary"));
 }
 function decisionView(){
