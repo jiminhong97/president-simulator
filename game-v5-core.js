@@ -2,12 +2,12 @@
 /* Fictional Baganeum 5.0 game. v4's browser save is never modified. */
 const V5_SAVE="baganeum_bizarre_v5",V4_SAVE="starlight_president_v2",V5_ROUNDS=8;
 const V5_KEYS=["heart","money","economy","diplomacy","energy","chaos"];
-const V5_NAME={heart:"민심",money:"국고",economy:"경제",diplomacy:"외교",energy:"체력",chaos:"킹받음"};
+const V5_NAME={heart:"민심",money:"국고",economy:"경제",diplomacy:"외교",energy:"체력",chaos:"킹받아요;"};
 const V5_ICON={heart:"❤️",money:"💰",economy:"📈",diplomacy:"🌐",energy:"⚡",chaos:"🤡"};
 const V5_ART=["sleep","ceremony","blanket","double","chicken","protest","wallet","cash","phone","meeting","newspaper","tomato","medal","parade","microphone","flag","budget"];
 const V5_STAFF={
- finance:[{id:"save",name:"홍자만",desc:"적자가 나면 지출 4 감소"},{id:"trade",name:"홍돈돈",desc:"국고 수입이 생길 때마다 +3"}],
- chief:[{id:"people",name:"홍말랑",desc:"민심 회복 시 +2"},{id:"rest",name:"홍제이맨",desc:"체력 감소 시 피해 2 완화"}]
+ finance:[{id:"save",name:"홍자만",desc:"적자가 나면 지출 4 감소"},{id:"trade",name:"홍도니좌",desc:"국고 수입이 생길 때마다 +3"}],
+ chief:[{id:"people",name:"홍줴줴",desc:"민심 회복 시 +2"},{id:"rest",name:"홍제이맨",desc:"체력 감소 시 피해 2 완화"}]
 };
 let G=null,tab="home",scene="desk",moreVoices=false,gameTimer=null,miniComment="";
 const APP=document.getElementById("app");
